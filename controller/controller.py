@@ -8,8 +8,8 @@ from rich import print
 import json
 import os
 import random
-
 from view.view import create_tournament_view
+from datetime import datetime
 
 
 class MainController:
@@ -23,25 +23,31 @@ class MainController:
         print("Tournoi créé !")
         print(created_tournament)
         self.tournament_controller.add_player()
-        self.tournament_controller.register_players()
-        tour_list = []
+        _, created_tournament.list_participants = self.tournament_controller.register_players()
+        print(created_tournament)
         for i in range(1, int(created_tournament.round_number) + 1):
             print("Tour n°:", i)
             index = 0
+            created_tournament.current_round += 1
             if i == 1:
                 pairs = self.tournament_controller.generate_first_pairs()
             else:
                 pairs = self.tournament_controller.generate_pairs()
+            start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+            tour_obj = Tour(i, start_date=start_date, end_date="", match_list=[])
             print("Paires du tour", i, ":", pairs)
             for pair in pairs:
                 match_obj = Match(*pair)
                 match_obj.combat()
                 print(match_obj)
+                tour_obj.match_list.append(match_obj)
                 index += 1
-            tour_obj = Tour(i, start_date="Today", end_date="tomorrow", match_list="les matchs")
-            tour_list.append(tour_obj)
-            print("liste des tours :", tour_list)
-            # Ajouter l'objet Tour à la liste des tours du Tournoi
+            tour_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+            created_tournament.round_list.append(tour_obj)
+            print(tour_obj)
+            print("ROUND LIST:::::::::", created_tournament.round_list)
+        created_tournament.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+        print(created_tournament)
 
         print("Générer un rapport :")
         print("retour au menu principal :")
@@ -83,8 +89,8 @@ class TournamentController:
     print("liste des joueurs :", all_contenders)
 
     def add_player(self):
-        add = int(input("Ajouter un joueur ? 1 = OUI / 2 = NON"))
-        while add == True:
+        add = int(input("Ajouter un joueur ? 1 = OUI / 0 = NON"))
+        while add:
             new_player = Player(
                 nom=input("Quel est le nom du joueur ?"),
                 prenom=input("Quel est son prénom ?"),
@@ -106,14 +112,14 @@ class TournamentController:
             add = int(input("Ajouter un autre joueur ? 1 = OUI / 2 = NON"))
 
     def register_players(self):
-        self.liste_participants = random.sample(self.all_contenders, 6)
-        print("Liste des participants au tournoi :", self.liste_participants)
+        self.list_participants = random.sample(self.all_contenders, 6)
+        print("Liste des participants au tournoi :", self.list_participants)
         self.left_opponents_by_player = {}
-        for index, element in enumerate(self.liste_participants):
-            self.liste_participants_copy = self.liste_participants.copy()
-            self.liste_participants_copy.pop(index)
-            self.left_opponents_by_player[element] = self.liste_participants_copy
-        return self.left_opponents_by_player
+        for index, element in enumerate(self.list_participants):
+            self.list_participants_copy = self.list_participants.copy()
+            self.list_participants_copy.pop(index)
+            self.left_opponents_by_player[element] = self.list_participants_copy
+        return self.left_opponents_by_player, self.list_participants
 
     def generate_first_pairs(self):
         generated_pairs = []
@@ -123,9 +129,9 @@ class TournamentController:
             id_random = random.randrange(0, len(liste_participants))
             return liste_participants.pop(id_random)
 
-        while self.liste_participants:
-            player_1 = pop_random(self.liste_participants)
-            player_2 = pop_random(self.liste_participants)
+        while self.list_participants:
+            player_1 = pop_random(self.list_participants)
+            player_2 = pop_random(self.list_participants)
             self.left_opponents_by_player[player_1].remove(player_2)
             self.left_opponents_by_player[player_2].remove(player_1)
             random_pair = (player_1, player_2)
@@ -138,9 +144,8 @@ class TournamentController:
         next_pairs = []
 
         while ranked_players:
-            index = 0
-
             while True:  # TODO : Essayer une autre manière en parallèlle
+                index = 0
                 player_1 = ranked_players.pop(index)
                 try:
                     if ranked_players[index] in self.left_opponents_by_player[player_1]:
@@ -158,9 +163,7 @@ class TournamentController:
                     next_pairs = []
                     ranked_players = []
                     ranked_players = TournamentController.shuffle_equal_players(self)
-            # self.left_opponents_by_player[player_1].remove(player_2)
-            # self.left_opponents_by_player[player_2].remove(player_1)
-            pair = (player_1, player_2)  # TODO :
+            pair = (player_1, player_2)
             next_pairs.append(pair)
             index = 0
 
@@ -168,17 +171,8 @@ class TournamentController:
             self.left_opponents_by_player[pair[0]].remove(pair[1])
             self.left_opponents_by_player[pair[1]].remove(pair[0])
 
-        # print("Paires du tour :", next_pairs)  #TODO: a virer ?
         return next_pairs
 
-    # def shuffle_equal_players(self):
-    #     current_ranking = TournamentController.ranking(self)
-    #     ranked_players = {}
-    #     for num, player in enumerate(current_ranking):
-    #         player_name = current_ranking[num][0]
-    #         player_score = current_ranking[num][1]
-    #         ranked_players.setdefault(player_score, player_name)
-    #     return ranked_players
     def shuffle_equal_players(self):
         current_ranking = TournamentController.ranking(self)
         ranked_players_by_score = {}
@@ -198,24 +192,19 @@ class TournamentController:
         ranked_players = [player for score, players in ranked_players_by_score.items() for player in players]
         return ranked_players
 
-    def ranking(self):  # TODO : Cleaner cette fonction
+    def ranking(self):
         previous_matches = match.matchs_list.copy()
-        scores_list = []
         scores_list_dict = {}
         for num, outcome in enumerate(previous_matches):
             index = 0
-            result_1 = outcome[index]
-            joueur_result_1 = outcome[index][index]
-            resultat_joueur_1 = float(outcome[index][index + 1])
-            result_2 = outcome[index + 1]
-            joueur_result_2 = outcome[index + 1][index]
-            resultat_joueur_2 = float(outcome[index + 1][index + 1])
-            scores_list.append(result_1)
-            scores_list.append(result_2)
-            scores_list_dict.setdefault(joueur_result_1, 0)
-            scores_list_dict[joueur_result_1] += resultat_joueur_1
-            scores_list_dict.setdefault(joueur_result_2, 0)
-            scores_list_dict[joueur_result_2] += resultat_joueur_2
+            player_1 = outcome[index][index]
+            score_player_1 = float(outcome[index][index + 1])
+            player_2 = outcome[index + 1][index]
+            score_player_2 = float(outcome[index + 1][index + 1])
+            scores_list_dict.setdefault(player_1, 0)
+            scores_list_dict[player_1] += score_player_1
+            scores_list_dict.setdefault(player_2, 0)
+            scores_list_dict[player_2] += score_player_2
         ranking = sorted(scores_list_dict.items(), key=lambda item: item[1], reverse=True)
         print("Liste des matchs :", match.matchs_list)
         print("Classement :", ranking)

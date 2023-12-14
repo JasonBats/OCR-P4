@@ -1,6 +1,7 @@
 from model import tournoi
 from model import tours
 from rich import print
+from datetime import datetime
 
 """
 1 : demarrer un tournoi
@@ -42,22 +43,32 @@ https://rich.readthedocs.io/en/stable/tables.html
 
 def create_tournament_view():
     tournament_inputs = {
-        'nom': input("Quel est le nom du tournoi ?\n"),
-        'lieu': input("Où se déroule le tournoi ?\n"),
-        'date_debut': input("Quelle est la datede début ? (Format AAAA/MM/JJ)\n"),
-        'date_fin': input("Quelle est la date de fin ? (Format AAAA/MM/JJ)\n"),
+        'name': input("Quel est le nom du tournoi ?\n"),
+        'location': input("Où se déroule le tournoi ?\n"),
+        'start_date': datetime.now().strftime("%d/%m/%Y, %H:%M"),
+        'end_date': datetime.now().strftime("%d/%m/%Y, %H:%M"),
         'description': input("Ajoutez une description pour ce tournoi (facultatif)\n"),
-        'nombre_tours': input("Combien de tours pour votre tournoi ?"),
-        # TODO: Faire vérifs de format
+        'round_number': get_round_number()
     }
     return tournament_inputs
+
 
 def afficher_rapport():
     pass
 
+
 def gerer_utilisateurs():
     pass
+
 
 def read_menu_selection():
     main_menu = int(input("\nQue souhaitez-vous faire ? \n\n1 : Démarrer un tournoi\n2 : Afficher un rapport\n3 : Gerer des utilisateurs\n"))
     return main_menu
+
+
+def get_round_number():
+    while True:
+        try:
+            return int(input("Combien de tours pour votre tournoi ? "))
+        except ValueError:
+            print("Merci de saisir un nombre entier.")
