@@ -1,6 +1,3 @@
-from datetime import datetime
-
-
 class Tournoi:
     def __init__(self, name="",
                  location="",

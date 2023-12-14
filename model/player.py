@@ -1,7 +1,3 @@
-import json
-import os
-
-
 class Player:
     def __init__(self, nom, prenom, date_naissance):
         self.nom = nom
@@ -12,7 +8,7 @@ class Player:
         return f"{self.nom} {self.prenom}"
     
     def to_dict(self):
-        return{
+        return {
             'nom': self.nom,
             'prenom': self.prenom,
             'date_naissance': self.date_naissance

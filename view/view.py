@@ -1,5 +1,3 @@
-from model import tournoi
-from model import tours
 from rich import print
 from datetime import datetime
 
@@ -45,8 +43,8 @@ def create_tournament_view():
     tournament_inputs = {
         'name': input("Quel est le nom du tournoi ?\n"),
         'location': input("Où se déroule le tournoi ?\n"),
-        'start_date': "",
-        'end_date': "",
+        'start_date': datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
+        'end_date': datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
         'description': input("Ajoutez une description pour ce tournoi (facultatif)\n"),
         'round_number': get_round_number()
     }
