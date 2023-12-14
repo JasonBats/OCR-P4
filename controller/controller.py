@@ -1,14 +1,13 @@
 from model import match
+from model.tours import Tour
 from view import view
 from model.tournoi import Tournoi
 from model.player import Player
-from model.tours import Liste_Tour_2
 from model.match import Match
 from rich import print
 import json
 import os
 import random
-import copy
 
 from view.view import create_tournament_view
 
@@ -25,36 +24,33 @@ class MainController:
         print(created_tournament)
         self.tournament_controller.add_player()
         self.tournament_controller.register_players()
-        for i in range(1, int(created_tournament.nombre_tours) + 1):
+        tour_list = []
+        for i in range(1, int(created_tournament.round_number) + 1):
             print("Tour n°:", i)
             index = 0
             if i == 1:
                 pairs = self.tournament_controller.generate_first_pairs()
             else:
-                pairs = self.tournament_controller.generate_pairs() # TODO :Créer fichier avec fake valeurs pour aller plus vite
+                pairs = self.tournament_controller.generate_pairs()
+            print("Paires du tour", i, ":", pairs)
             for pair in pairs:
-                pairs[index].combat()
-                print(pairs[index])
+                match_obj = Match(*pair)
+                match_obj.combat()
+                print(match_obj)
                 index += 1
-            self.tournament_controller.ranking()
-                # demander les scores pour chaque joueur dans la paire
-                # créer l'objet Match avec ces résultats
-                # Ajouter Match à la liste des matchs du tour
-                # Passser liste de matchs à la liste des Tours
+            tour_obj = Tour(i, start_date="Today", end_date="tomorrow", match_list="les matchs")
+            tour_list.append(tour_obj)
+            print("liste des tours :", tour_list)
             # Ajouter l'objet Tour à la liste des tours du Tournoi
-
-
 
         print("Générer un rapport :")
         print("retour au menu principal :")
         print("Saisissez le chiffre correspondant à votre choix.")
 
-
-
-    def afficher_rapport():
+    def afficher_rapport(self):
         pass
 
-    def gerer_utilisateurs():
+    def gerer_utilisateurs(self):
         pass
 
     menu_principal = {
@@ -96,7 +92,7 @@ class TournamentController:
             try:
                 with open(self.database_path, "r", encoding="utf-8") as fichier:
                     joueurs = json.load(fichier)
-                    print("Liste des joueurs ::::::::::::::::::::::", joueurs)
+                    print("Liste de tous les joueurs :", joueurs)
             except FileNotFoundError:
                 joueurs = []
 
@@ -132,42 +128,19 @@ class TournamentController:
             player_2 = pop_random(self.liste_participants)
             self.left_opponents_by_player[player_1].remove(player_2)
             self.left_opponents_by_player[player_2].remove(player_1)
-            random_pair = Match(player_1, player_2)
+            random_pair = (player_1, player_2)
             generated_pairs.append(random_pair)
-        print("Paires du tour 1 :", generated_pairs)
         return generated_pairs
 
-    # def generate_pairs(self):
-    #     current_ranking = TournamentController.ranking(self)
-    #     ranked_players = []
-    #     for num, player in enumerate(current_ranking):
-    #         player = current_ranking[num][0]
-    #         ranked_players.append(player)
-    #     next_pairs = []
-    #     index = 0
-    #     while ranked_players:
-    #         player_1 = ranked_players.pop(index)
-    #         if ranked_players[index] in self.left_opponents_by_player[player_1]:
-    #             player_2 = ranked_players.pop(index)
-    #         else:
-    #             player_2 = ranked_players.pop(index + 1)
-    #         self.left_opponents_by_player[player_1].remove(player_2)
-    #         self.left_opponents_by_player[player_2].remove(player_1)
-    #         pair = Match(player_1, player_2)
-    #         next_pairs.append(pair)
-    #     TournamentController.shuffle_equal_players(self)
-    #     print(next_pairs)
-    #     return next_pairs
-
     def generate_pairs(self):
-        current_ranking = TournamentController.ranking(self)
+        current_ranking = self.ranking()
         ranked_players = [player for player, _ in current_ranking]
         next_pairs = []
 
         while ranked_players:
             index = 0
 
-            while True:
+            while True:  # TODO : Essayer une autre manière en parallèlle
                 player_1 = ranked_players.pop(index)
                 try:
                     if ranked_players[index] in self.left_opponents_by_player[player_1]:
@@ -178,7 +151,7 @@ class TournamentController:
                             index += 1
                             search_player = ranked_players[index]
                             if index >= len(ranked_players):
-                                index = 0 #ATTENDS QUOI ??
+                                index = 0
                         player_2 = ranked_players.pop(index)
                     break
                 except IndexError:
@@ -187,15 +160,15 @@ class TournamentController:
                     ranked_players = TournamentController.shuffle_equal_players(self)
             # self.left_opponents_by_player[player_1].remove(player_2)
             # self.left_opponents_by_player[player_2].remove(player_1)
-            pair = Match(player_1, player_2)
+            pair = (player_1, player_2)  # TODO :
             next_pairs.append(pair)
             index = 0
 
         for pair in next_pairs:
-            self.left_opponents_by_player[pair.player_1].remove(pair.player_2)
-            self.left_opponents_by_player[pair.player_2].remove(pair.player_1)
+            self.left_opponents_by_player[pair[0]].remove(pair[1])
+            self.left_opponents_by_player[pair[1]].remove(pair[0])
 
-        print(next_pairs)
+        # print("Paires du tour :", next_pairs)  #TODO: a virer ?
         return next_pairs
 
     # def shuffle_equal_players(self):
@@ -223,10 +196,9 @@ class TournamentController:
                 pass
 
         ranked_players = [player for score, players in ranked_players_by_score.items() for player in players]
-        print(ranked_players)
         return ranked_players
 
-    def ranking(self):
+    def ranking(self):  # TODO : Cleaner cette fonction
         previous_matches = match.matchs_list.copy()
         scores_list = []
         scores_list_dict = {}
