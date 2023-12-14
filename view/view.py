@@ -45,8 +45,8 @@ def create_tournament_view():
     tournament_inputs = {
         'name': input("Quel est le nom du tournoi ?\n"),
         'location': input("Où se déroule le tournoi ?\n"),
-        'start_date': datetime.now().strftime("%d/%m/%Y, %H:%M"),
-        'end_date': datetime.now().strftime("%d/%m/%Y, %H:%M"),
+        'start_date': "",
+        'end_date': "",
         'description': input("Ajoutez une description pour ce tournoi (facultatif)\n"),
         'round_number': get_round_number()
     }
@@ -62,7 +62,10 @@ def gerer_utilisateurs():
 
 
 def read_menu_selection():
-    main_menu = int(input("\nQue souhaitez-vous faire ? \n\n1 : Démarrer un tournoi\n2 : Afficher un rapport\n3 : Gerer des utilisateurs\n"))
+    main_menu = int(input("\nQue souhaitez-vous faire ? \n"
+                          "\n1 : Démarrer un tournoi"
+                          "\n2 : Afficher un rapport"
+                          "\n3 : Gerer des utilisateurs\n"))
     return main_menu
 
 

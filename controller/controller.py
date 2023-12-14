@@ -21,7 +21,6 @@ class MainController:
         tournament_inputs = create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
         print("Tournoi créé !")
-        print(created_tournament)
         self.tournament_controller.add_player()
         _, created_tournament.list_participants = self.tournament_controller.register_players()
         print(created_tournament)
@@ -161,11 +160,9 @@ class TournamentController:
                     break
                 except IndexError:
                     next_pairs = []
-                    ranked_players = []
                     ranked_players = TournamentController.shuffle_equal_players(self)
             pair = (player_1, player_2)
             next_pairs.append(pair)
-            index = 0
 
         for pair in next_pairs:
             self.left_opponents_by_player[pair[0]].remove(pair[1])

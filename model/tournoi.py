@@ -11,7 +11,7 @@ class Tournoi:
         self.name = name
         self.lieu = location
         self.start_date = start_date
-        self.end_date = end_date  # TODO: Modifier la date à la fin du dernier tour
+        self.end_date = end_date
         self.current_round = 0
         self.round_list = []
         self.list_participants = []
