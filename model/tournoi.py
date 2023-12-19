@@ -14,9 +14,13 @@ class Tournoi:
         self.list_participants = []
         self.description = description
         self.round_number = round_number
+        self.match_list = []
             
     def __repr__(self):
         return (f"Nom du tournoi : {self.name}, à {self.lieu}, du {self.start_date} au {self.end_date}."
                 f"Tour actuel : {self.current_round} / {self.round_number}."
                 f"Description : {self.description}"
                 f"\nListe des participants : {self.list_participants}")
+
+
+tournament_list = []

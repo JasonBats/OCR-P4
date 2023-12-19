@@ -51,8 +51,14 @@ def create_tournament_view():
     return tournament_inputs
 
 
-def afficher_rapport():
-    pass
+def show_report_view():
+    show_report_inputs = int(input("Quel rapport souhaitez-vous afficher ? \n"
+                                   "\n1 : Liste de tous les joueurs"
+                                   "\n2 : Liste de tous les tournois"
+                                   "\n3 : Détails d'un tournoi"
+                                   "\n4 : Liste des joueurs d'un tournoi"
+                                   "\n5 : Liste de tous les tours d'un tournoi"))
+    return show_report_inputs
 
 
 def gerer_utilisateurs():

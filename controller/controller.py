@@ -1,4 +1,4 @@
-from model import match
+from model import match, tournoi
 from model.tours import Tour
 from view import view
 from model.tournoi import Tournoi
@@ -11,7 +11,7 @@ import random
 from view.view import create_tournament_view
 from datetime import datetime
 
-
+# TODO : Le ranking n'est pas propre au tournoi. Deuxième tournoi pollué par les anciennes datas
 class MainController:
 
     def __init__(self):
@@ -20,9 +20,10 @@ class MainController:
     def run_tournament(self):
         tournament_inputs = create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
+        tournoi.tournament_list.append(created_tournament)
         print("Tournoi créé !")
         self.tournament_controller.add_player()
-        _, created_tournament.list_participants = self.tournament_controller.register_players()
+        _, _, created_tournament.list_participants = self.tournament_controller.register_players()
         print(created_tournament)
         for i in range(1, int(created_tournament.round_number) + 1):
             print("Tour n°:", i)
@@ -52,15 +53,29 @@ class MainController:
         print("retour au menu principal :")
         print("Saisissez le chiffre correspondant à votre choix.")
 
-    def afficher_rapport(self):
-        pass
+    def show_report(self):
+        report_choice = view.show_report_view()
+        if report_choice == 1:
+            print("Tous les joueurs par ordre alphabétique :", self.sort_players_alphabetical())
+        if report_choice == 2:
+            print("Tous les tournois :", tournoi.tournament_list)
+        if report_choice == 3:
+            print("Nom et dates d'un tournoi donné")
+        if report_choice == 4:
+            print("Joueurs d'un tournoi donné")
+        if report_choice == 5:
+            print("Liste de tous les tours du tournoi et de tous les matchs du tour")
+
+    def sort_players_alphabetical(self):
+        sorted_contenders = sorted(TournamentController.all_contenders, key=lambda player: player.nom)
+        return sorted_contenders
 
     def gerer_utilisateurs(self):
         pass
 
     menu_principal = {
         1: run_tournament,
-        2: afficher_rapport,
+        2: show_report,
         3: gerer_utilisateurs
     }
 
@@ -85,7 +100,9 @@ class TournamentController:
         players_data = json.load(file)
 
     all_contenders = [Player(joueur["nom"], joueur["prenom"], joueur["date_naissance"]) for joueur in players_data]
-    print("liste des joueurs :", all_contenders)
+
+    def __init__(self):
+        self.tour_obj = None
 
     def add_player(self):
         add = int(input("Ajouter un joueur ? 1 = OUI / 0 = NON"))
@@ -112,13 +129,15 @@ class TournamentController:
 
     def register_players(self):
         self.list_participants = random.sample(self.all_contenders, 6)
+        self.initial_list = []
         print("Liste des participants au tournoi :", self.list_participants)
         self.left_opponents_by_player = {}
         for index, element in enumerate(self.list_participants):
+            self.initial_list.append(element)
             self.list_participants_copy = self.list_participants.copy()
             self.list_participants_copy.pop(index)
             self.left_opponents_by_player[element] = self.list_participants_copy
-        return self.left_opponents_by_player, self.list_participants
+        return self.left_opponents_by_player, self.list_participants, self.initial_list
 
     def generate_first_pairs(self):
         generated_pairs = []
@@ -206,7 +225,3 @@ class TournamentController:
         print("Liste des matchs :", match.matchs_list)
         print("Classement :", ranking)
         return ranking
-
-
-# Logique revue de choix d'adversaire : Avant, si l'adversaire n'était pas dans la liste des adversaires,
-# je prenais le +1 dans la liste : qu'il soit ou non dans la liste des adversaires.

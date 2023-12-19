@@ -34,4 +34,4 @@ class Match:
         return f"\n{self.player_1} {self.score_1} VS {self.score_2} {self.player_2}\n"
 
 
-matchs_list = []
+matchs_list = []  # TODO: Transférer vers l'instance du tournoi
