@@ -43,10 +43,10 @@ def create_tournament_view():
     tournament_inputs = {
         'name': input("Quel est le nom du tournoi ?\n"),
         'location': input("Où se déroule le tournoi ?\n"),
-        'start_date': datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
+        'start_date': datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),  # Meilleures start_date et end_date
         'end_date': datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
         'description': input("Ajoutez une description pour ce tournoi (facultatif)\n"),
-        'round_number': get_round_number()
+        'round_number': get_round_number()  # Fonction pour verifier le nombre de tours
     }
     return tournament_inputs
 

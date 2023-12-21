@@ -12,6 +12,8 @@ from view.view import create_tournament_view
 from datetime import datetime
 
 # TODO : Le ranking n'est pas propre au tournoi. Deuxième tournoi pollué par les anciennes datas
+
+
 class MainController:
 
     def __init__(self):
