@@ -18,6 +18,9 @@ class Match:
             self.score_2 = "1"
         elif self.score_1 == "0.5":
             self.score_2 = "0.5"
+        else:
+            print("Ce score n'existe pas. Saisissez 1 pour une victoire, 0.5 pour une égalité ou 0 pour une défaite")
+            self.combat()
         verif = int(input(
             f"Le score est bien {self.player_1} {self.score_1} VS {self.player_2} {self.score_2} ? 1 = OUI / 2 = NON"))
         if verif == 1:
