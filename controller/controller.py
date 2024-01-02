@@ -57,7 +57,7 @@ class MainController:
     def show_report(self):
         report_choice = view.show_report_view()
         if report_choice == 1:
-            print("Tous les joueurs par ordre alphabétique :", self.sort_players_alphabetical())
+            print("Tous les joueurs par ordre alphabétique :", sort_players_alphabetical())
         if report_choice == 2:
             print("Tous les tournois :", tournoi.tournament_list)
         if report_choice == 3:
@@ -66,10 +66,6 @@ class MainController:
             print("Joueurs d'un tournoi donné")
         if report_choice == 5:
             print("Liste de tous les tours du tournoi et de tous les matchs du tour")
-
-    def sort_players_alphabetical(self):
-        sorted_contenders = sorted(TournamentController.all_contenders, key=lambda player: player.nom)
-        return sorted_contenders
 
     def gerer_utilisateurs(self):
         pass
@@ -200,7 +196,6 @@ class TournamentController:
             else:
                 ranked_players_by_score[player_score].append(player_name)
 
-
         for score, player_list in ranked_players_by_score.items():
             if len(player_list) > 1:
                 player_list = random.shuffle(player_list)
@@ -238,7 +233,6 @@ class TournamentController:
         previous_matches = match_list
         scores_list_dict = {}
         for num, outcome in enumerate(previous_matches):
-            index = 0
             player_1 = outcome.player_1
             score_player_1 = float(outcome.score_1)
             player_2 = outcome.player_2
@@ -251,3 +245,8 @@ class TournamentController:
         print("Liste des matchs :", match_list)
         print("Classement :", ranking)
         return ranking
+
+
+def sort_players_alphabetical():
+    sorted_contenders = sorted(TournamentController.all_contenders, key=lambda player: player.nom)
+    return sorted_contenders

@@ -1,5 +1,4 @@
 from rich import print
-
 import view.view
 
 
