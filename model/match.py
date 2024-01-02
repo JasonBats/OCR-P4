@@ -12,7 +12,7 @@ class Match:
         self.score_2 = score_2
         self.match_data = [(player_1, score_1), (player_2, score_2)]
 
-    def encounter(self):  # TODO: Inputs dans view / Append dans le controller / Revoir la logique
+    def encounter(self):
         self.score_1 = view.view.write_score(self.player_1)
         if self.score_1 == "1":
             self.score_2 = "0"

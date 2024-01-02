@@ -1,6 +1,9 @@
 from rich import print
 from datetime import datetime
 
+from model import tournoi
+from model.player import Player
+
 """
 1 : demarrer un tournoi
     # - Création d'un tournoi
@@ -93,3 +96,24 @@ def score_review(player_1, player_2, score_1, score_2):
     verif = int(input(f"Le score est bien {player_1} {score_1}"
                       f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON"))
     return verif
+
+
+def add_player():
+    add = int(input("Ajouter un joueur ? 1 = OUI / 0 = NON"))
+    return add
+
+
+def build_player():
+    new_player = Player(
+                nom=input("Quel est le nom du joueur ?"),
+                prenom=input("Quel est son prénom ?"),
+                date_naissance=input("Quelle est sa date de naissance ?"))
+    return new_player
+
+
+def chose_tournament_to_show():
+    tournament_list = tournoi.tournament_list
+    for index, tournament in enumerate(tournament_list):
+        print(f"{index} - {tournament.name}")
+    chosen_tournament = int(input(f"De quel tournoi souhaitez-vous voir le détail ?"))
+    return chosen_tournament

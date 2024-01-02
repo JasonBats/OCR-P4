@@ -11,7 +11,7 @@ import random
 from view.view import create_tournament_view
 from datetime import datetime
 
-# TODO : Maincontroller doit gérer ce qui est propre au programme et c'est tout. Nettoyer MainController et TournamentController
+# TODO : Maincontroller doit gérer ce qui est propre au programme. clean MainController et TournamentController
 
 
 class MainController:
@@ -28,17 +28,14 @@ class MainController:
         _, _, created_tournament.list_participants = self.tournament_controller.register_players()
         print(created_tournament)
         for i in range(1, int(created_tournament.round_number) + 1):
-            # Init Tournament object
             start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
             tour_obj = Tour(i, start_date=start_date, end_date="", match_list=[])
-
             print("Tour n°:", i)
             created_tournament.current_round += 1
             if i == 1:
                 pairs = self.tournament_controller.generate_first_pairs()
             else:
                 pairs = self.tournament_controller.generate_pairs(created_tournament)
-
             print("Paires du tour", i, ":", pairs)
             for pair in pairs:
                 match_obj = Match(*pair)
@@ -46,7 +43,6 @@ class MainController:
                 print(match_obj)
                 tour_obj.match_list.append(match_obj)
                 created_tournament.match_list.append(match_obj)
-
             tour_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
             created_tournament.round_list.append(tour_obj)
             print(tour_obj)
@@ -65,7 +61,7 @@ class MainController:
         if report_choice == 2:
             print("Tous les tournois :", tournoi.tournament_list)
         if report_choice == 3:
-            print("Nom et dates d'un tournoi donné")
+            view.chose_tournament_to_show()
         if report_choice == 4:
             print("Joueurs d'un tournoi donné")
         if report_choice == 5:
@@ -113,27 +109,24 @@ class TournamentController:
         self.tour_obj = None
 
     def add_player(self):
-        add = int(input("Ajouter un joueur ? 1 = OUI / 0 = NON"))
+        add = view.add_player()
         while add:
-            new_player = Player(
-                nom=input("Quel est le nom du joueur ?"),
-                prenom=input("Quel est son prénom ?"),
-                date_naissance=input("Quelle est sa date de naissance ?"))
+            new_player = view.build_player()
             try:
-                with open(self.database_path, "r", encoding="utf-8") as fichier:
-                    joueurs = json.load(fichier)
-                    print("Liste de tous les joueurs :", joueurs)
+                with open(self.database_path, "r", encoding="utf-8") as file:
+                    player_base = json.load(file)
             except FileNotFoundError:
-                joueurs = []
+                player_base = []
 
-            joueurs.append(new_player.to_dict())
+            player_base.append(new_player.to_dict())
+            print("Liste de tous les joueurs :", player_base)
             print(new_player)
 
-            with open(self.database_path, "w", encoding="utf-8") as fichier:
-                json.dump(joueurs, fichier, default=lambda obj: new_player.__json__(), ensure_ascii=False, indent=2)
+            with open(self.database_path, "w", encoding="utf-8") as file:
+                json.dump(player_base, file, default=lambda obj: new_player.__json__(), ensure_ascii=False, indent=2)
 
             print(new_player, " : Joueur inscrit avec succès")
-            add = int(input("Ajouter un autre joueur ? 1 = OUI / 2 = NON"))
+            add = view.add_player()
 
     def register_players(self):
         self.list_participants = random.sample(self.all_contenders, 6)
