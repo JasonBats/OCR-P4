@@ -79,3 +79,17 @@ def get_round_number():
             return int(input("Combien de tours pour votre tournoi ? "))
         except ValueError:
             print("Merci de saisir un nombre entier.")
+
+
+def write_score(player):
+    try:
+        score = input(f"Quel score pour {player} ?")
+        return score
+    except ValueError:
+        print("Merci de saisir un nombre")
+
+
+def score_review(player_1, player_2, score_1, score_2):
+    verif = int(input(f"Le score est bien {player_1} {score_1}"
+                      f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON"))
+    return verif

@@ -98,6 +98,9 @@ class MainController:
                 print("Veuillez saisir un nombre entier")
 
 
+fun_counter = 0
+
+
 class TournamentController:
     database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'players_database.json')
 
@@ -184,7 +187,7 @@ class TournamentController:
                     break
                 except IndexError:
                     next_pairs = []
-                    ranked_players = TournamentController.shuffle_equal_players(self, tour_obj.match_list)
+                    ranked_players = TournamentController.shuffle_players(self, tour_obj.match_list)
             pair = (player_1, player_2)
             next_pairs.append(pair)
 
@@ -207,9 +210,9 @@ class TournamentController:
 
         for score, player_list in ranked_players_by_score.items():
             if len(player_list) > 1:
-                player_list = random.shuffle(player_list) # TODO : La façon de mélanger les joueurs peut ne pas régler le problème. Mélanger toute la liste ?
+                player_list = random.shuffle(player_list)
             else:
-                pass  # TODO : Au lieu de mélanger par score > Mélanger la liste entière et trier par score. Laisser tourner 100 fois avant de tout mélanger sans trier
+                pass
 
         ranked_players = [player for score, players in ranked_players_by_score.items() for player in players]
 
@@ -217,6 +220,24 @@ class TournamentController:
             print("Oupsie...")
             random.shuffle(ranked_players)
 
+        return ranked_players
+
+    def shuffle_players(self, tour_obj):
+        global fun_counter
+
+        while fun_counter < 50:
+            current_ranking = self.ranking(tour_obj)
+            random.shuffle(current_ranking)
+            sorted_ranking = sorted(current_ranking, key=lambda x: x[1], reverse=True)
+            ranked_players = [player_name for player_name, player_score in sorted_ranking]
+            print("Jouers mélangés ! Nouvelle liste :", ranked_players, fun_counter)
+            fun_counter += 1
+            return ranked_players
+        current_ranking = self.ranking(tour_obj)
+        random.shuffle(current_ranking)
+        ranked_players = [player_name for player_name, player_score in current_ranking]
+        print("Joueurs mélangés mais alors genre VRAIMENT !!", ranked_players)
+        fun_counter = 0
         return ranked_players
 
     def ranking(self, match_list):

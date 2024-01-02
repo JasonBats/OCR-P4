@@ -1,5 +1,7 @@
 from rich import print
 
+import view.view
+
 
 class Match:
 
@@ -11,7 +13,7 @@ class Match:
         self.match_data = [(player_1, score_1), (player_2, score_2)]
 
     def encounter(self):  # TODO: Inputs dans view / Append dans le controller / Revoir la logique
-        self.score_1 = input(f"Quel score pour {self.player_1} ?")
+        self.score_1 = view.view.write_score(self.player_1)
         if self.score_1 == "1":
             self.score_2 = "0"
         elif self.score_1 == "0":
@@ -21,8 +23,7 @@ class Match:
         else:
             print("Ce score n'existe pas. Saisissez 1 pour une victoire, 0.5 pour une égalité ou 0 pour une défaite")
             self.encounter()
-        verif = int(input(
-            f"Le score est bien {self.player_1} {self.score_1} VS {self.player_2} {self.score_2} ? 1 = OUI / 2 = NON"))
+        verif = view.view.score_review(self.player_1, self.player_2, self.score_1, self.score_2)
         if verif == 1:
             pass
         elif verif == 2:
