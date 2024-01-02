@@ -11,7 +11,7 @@ import random
 from view.view import create_tournament_view
 from datetime import datetime
 
-# TODO : Le ranking n'est pas propre au tournoi. Deuxième tournoi pollué par les anciennes datas
+# TODO : Maincontroller doit gérer ce qui est propre au programme et c'est tout. Nettoyer MainController et TournamentController
 
 
 class MainController:
@@ -28,22 +28,25 @@ class MainController:
         _, _, created_tournament.list_participants = self.tournament_controller.register_players()
         print(created_tournament)
         for i in range(1, int(created_tournament.round_number) + 1):
+            # Init Tournament object
+            start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+            tour_obj = Tour(i, start_date=start_date, end_date="", match_list=[])
+
             print("Tour n°:", i)
-            index = 0
             created_tournament.current_round += 1
             if i == 1:
                 pairs = self.tournament_controller.generate_first_pairs()
             else:
-                pairs = self.tournament_controller.generate_pairs()
-            start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-            tour_obj = Tour(i, start_date=start_date, end_date="", match_list=[])
+                pairs = self.tournament_controller.generate_pairs(created_tournament)
+
             print("Paires du tour", i, ":", pairs)
             for pair in pairs:
                 match_obj = Match(*pair)
-                match_obj.combat()
+                match_obj.encounter()
                 print(match_obj)
                 tour_obj.match_list.append(match_obj)
-                index += 1
+                created_tournament.match_list.append(match_obj)
+
             tour_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
             created_tournament.round_list.append(tour_obj)
             print(tour_obj)
@@ -158,8 +161,8 @@ class TournamentController:
             generated_pairs.append(random_pair)
         return generated_pairs
 
-    def generate_pairs(self):
-        current_ranking = self.ranking()
+    def generate_pairs(self, tour_obj):
+        current_ranking = self.ranking(tour_obj.match_list)
         ranked_players = [player for player, _ in current_ranking]
         next_pairs = []
 
@@ -181,7 +184,7 @@ class TournamentController:
                     break
                 except IndexError:
                     next_pairs = []
-                    ranked_players = TournamentController.shuffle_equal_players(self)
+                    ranked_players = TournamentController.shuffle_equal_players(self, tour_obj.match_list)
             pair = (player_1, player_2)
             next_pairs.append(pair)
 
@@ -191,8 +194,8 @@ class TournamentController:
 
         return next_pairs
 
-    def shuffle_equal_players(self):
-        current_ranking = TournamentController.ranking(self)
+    def shuffle_equal_players(self, tour_obj):
+        current_ranking = self.ranking(tour_obj)
         ranked_players_by_score = {}
 
         for player_name, player_score in current_ranking:
@@ -201,29 +204,36 @@ class TournamentController:
             else:
                 ranked_players_by_score[player_score].append(player_name)
 
+
         for score, player_list in ranked_players_by_score.items():
             if len(player_list) > 1:
-                player_list = random.shuffle(player_list)
+                player_list = random.shuffle(player_list) # TODO : La façon de mélanger les joueurs peut ne pas régler le problème. Mélanger toute la liste ?
             else:
-                pass
+                pass  # TODO : Au lieu de mélanger par score > Mélanger la liste entière et trier par score. Laisser tourner 100 fois avant de tout mélanger sans trier
 
         ranked_players = [player for score, players in ranked_players_by_score.items() for player in players]
+
+        if all(len(players) == 2 for players in ranked_players_by_score.values()):  # Forcing
+            print("Oupsie...")
+            random.shuffle(ranked_players)
+
         return ranked_players
 
-    def ranking(self):
-        previous_matches = match.matchs_list.copy()
+    def ranking(self, match_list):
+        print(match_list)
+        previous_matches = match_list
         scores_list_dict = {}
         for num, outcome in enumerate(previous_matches):
             index = 0
-            player_1 = outcome[index][index]
-            score_player_1 = float(outcome[index][index + 1])
-            player_2 = outcome[index + 1][index]
-            score_player_2 = float(outcome[index + 1][index + 1])
+            player_1 = outcome.player_1
+            score_player_1 = float(outcome.score_1)
+            player_2 = outcome.player_2
+            score_player_2 = float(outcome.score_2)
             scores_list_dict.setdefault(player_1, 0)
             scores_list_dict[player_1] += score_player_1
             scores_list_dict.setdefault(player_2, 0)
             scores_list_dict[player_2] += score_player_2
         ranking = sorted(scores_list_dict.items(), key=lambda item: item[1], reverse=True)
-        print("Liste des matchs :", match.matchs_list)
+        print("Liste des matchs :", match_list)
         print("Classement :", ranking)
         return ranking
