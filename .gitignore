@@ -1,3 +1,4 @@
 .idea/
 model/database.json
 model/players_database.json
+model/tests.py
