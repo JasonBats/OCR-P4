@@ -10,6 +10,8 @@ import os
 import random
 from view.view import create_tournament_view
 from datetime import datetime
+from tinydb import TinyDB, Query
+
 
 # TODO : Maincontroller doit gérer ce qui est propre au programme. clean MainController et TournamentController
 
@@ -18,6 +20,7 @@ class MainController:
 
     def __init__(self):
         self.tournament_controller = TournamentController()
+        self.data_controller = DataController("Tournaments")
 
     def run_tournament(self):
         tournament_inputs = create_tournament_view()
@@ -48,6 +51,7 @@ class MainController:
             print(tour_obj)
             print("ROUND LIST:::::::::", created_tournament.round_list)
         created_tournament.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+        self.data_controller.data_save(created_tournament.to_dict())
         print(created_tournament)
 
         print("Générer un rapport :")
@@ -61,19 +65,20 @@ class MainController:
         if report_choice == 2:
             print("Tous les tournois :", tournoi.tournament_list)
         if report_choice == 3:
-            view.chose_tournament_to_show()
+            view.show_tournament_name_dates()
         if report_choice == 4:
-            print("Joueurs d'un tournoi donné")
+            view.show_tournament_participants()
         if report_choice == 5:
             print("Liste de tous les tours du tournoi et de tous les matchs du tour")
+            view.show_tournament_rounds()
 
-    def gerer_utilisateurs(self):
-        pass
+    def players_management(self):
+        view.manage_players()
 
     menu_principal = {
         1: run_tournament,
         2: show_report,
-        3: gerer_utilisateurs
+        3: players_management
     }
 
     def run(self):
@@ -88,9 +93,6 @@ class MainController:
                     print("Veuillez saisir le chiffre correspondant à votre choix.")
             except ValueError:
                 print("Veuillez saisir un nombre entier")
-
-
-fun_counter = 0
 
 
 class TournamentController:
@@ -211,21 +213,21 @@ class TournamentController:
         return ranked_players
 
     def shuffle_players(self, tour_obj):
-        global fun_counter
+        soft_shuffle_counter = 0
 
-        while fun_counter < 50:
+        while soft_shuffle_counter < 50:
             current_ranking = self.ranking(tour_obj)
             random.shuffle(current_ranking)
             sorted_ranking = sorted(current_ranking, key=lambda x: x[1], reverse=True)
             ranked_players = [player_name for player_name, player_score in sorted_ranking]
-            print("Jouers mélangés ! Nouvelle liste :", ranked_players, fun_counter)
-            fun_counter += 1
-            return ranked_players
-        current_ranking = self.ranking(tour_obj)
-        random.shuffle(current_ranking)
-        ranked_players = [player_name for player_name, player_score in current_ranking]
+            print("Jouers mélangés ! Nouvelle liste :", ranked_players, soft_shuffle_counter)
+            soft_shuffle_counter += 1
+            # return ranked_players
+        if soft_shuffle_counter >= 50:
+            current_ranking = self.ranking(tour_obj)
+            random.shuffle(current_ranking)
+            ranked_players = [player_name for player_name, player_score in current_ranking]
         print("Joueurs mélangés mais alors genre VRAIMENT !!", ranked_players)
-        fun_counter = 0
         return ranked_players
 
     def ranking(self, match_list):
@@ -247,6 +249,16 @@ class TournamentController:
         return ranking
 
 
-def sort_players_alphabetical():
+def sort_players_alphabetical():  # TODO : Rouvrir le json pour datas actualisées
     sorted_contenders = sorted(TournamentController.all_contenders, key=lambda player: player.nom)
     return sorted_contenders
+
+
+class DataController:
+    def __init__(self, dataname):
+        self.database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'database.json')
+        self.database = TinyDB(self.database_path, indent=4, encoding='utf-8')
+        self.database.default_table_name = dataname
+
+    def data_save(self, datas):
+        self.database.insert(datas)
