@@ -65,56 +65,62 @@ def show_report_view():
     return show_report_inputs
 
 
-def manage_players():
+def edit_player_informations(player):
+    for key in player.keys():
+        new_value = input(f"{key} [{player[key]}] :")
+        if new_value:
+            player[key] = new_value
+    return player
+
+
+def show_all_players():
+    player_base = open_players_database()
+    print("Liste de tous les joueurs :")
+    for index, player in enumerate(player_base):
+        player_instance = Player(player["nom"], player["prenom"], player["date_naissance"])
+        print(f"{index} - {player_instance}")
+
+
+def open_players_database():
     database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'players_database.json')
 
     with open(database_path, "r", encoding="utf-8") as file:
         player_base = json.load(file)
+    return player_base
+
+
+def save_player_database(player_base):
+    database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'players_database.json')
+    with open(database_path, 'w', encoding="utf-8") as file:
+        json.dump(player_base, file, ensure_ascii=False, indent=2)
+
+
+def manage_players():
+    player_base = open_players_database()
     manage_players_menu = int(input("Que souhaitez-vous faire ? \n"
                                     "\n1 : Modifier un joueur"
                                     "\n2 : Ajouter un joueur"
                                     "\n3 : Supprimer un joueur"
                                     "\n4 : Afficher la liste des joueurs\n"))
     if manage_players_menu == 1:
-        print("Liste de tous les joueurs :")
-        for index, player in enumerate(player_base):
-            player_instance = Player(player["nom"], player["prenom"], player["date_naissance"])
-            print(f"{index} - {player_instance}")
+        show_all_players()
         chosen_player = int(input("Quel joueur souhaitez-vous modifier ?"))
-        print(player_base[chosen_player])  # TODO : Comment modifier ces données ?
-        new_nom = input(f"Nom [{player_base[chosen_player]['nom']}] :")  #TODO : Refactor name/nom etc.
-        if new_nom:
-            player_base[chosen_player]['nom'] = new_nom
-        new_prenom = input(f"Prenom [{player_base[chosen_player]['prenom']}] :")
-        if new_prenom:
-            player_base[chosen_player]['prenom'] = new_prenom
-        print(player_base[chosen_player])
-        new_date_naissance = input(f"Date de naissance [{player_base[chosen_player]['date_naissance']}] :")
-        if new_date_naissance:
-            player_base[chosen_player]['date_naissance'] = new_date_naissance
-        print(player_base[chosen_player])  # TODO : Fonction de ça
+        edit_player_informations(player_base[chosen_player])
+        save_player_database(player_base)
+        print(f"Modifications apportées à {player_base[chosen_player]}")
     elif manage_players_menu == 2:
         new_player = build_player()
         player_base.append(new_player.to_dict())
-        print(player_base)
-        with open(database_path, 'w', encoding="utf-8") as file:
-            json.dump(player_base, file, ensure_ascii=False, indent=2)
+        print(f"\n[{new_player}] ajouté à la base de données des joueurs.")
+        save_player_database(player_base)
     elif manage_players_menu == 3:
-        print("Liste des joueurs :")
-        for index, player in enumerate(player_base):
-            player_instance = Player(player["nom"], player["prenom"], player["date_naissance"])
-            print(f"{index} - {player_instance}")
+        show_all_players()
         chosen_player = int(input("Quel joueur souhaitez-vous supprimer ?"))
-        print(f"{player_base[chosen_player]} supprimé.")
+        print(f"{player_base[chosen_player]} supprimé")
         del player_base[chosen_player]
-        print(player_base)
-        with open(database_path, 'w', encoding="utf-8") as file:
-            json.dump(player_base, file, ensure_ascii=False, indent=2)
+        save_player_database(player_base)
     elif manage_players_menu == 4:
-        print("Liste de tous les joueurs :")
-        for index, player in enumerate(player_base):
-            player_instance = Player(player["nom"], player["prenom"], player["date_naissance"])
-            print(f"{index} - {player_instance}")
+        show_all_players()
 
 
 def read_menu_selection():

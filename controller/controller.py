@@ -188,30 +188,6 @@ class TournamentController:
 
         return next_pairs
 
-    def shuffle_equal_players(self, tour_obj):
-        current_ranking = self.ranking(tour_obj)
-        ranked_players_by_score = {}
-
-        for player_name, player_score in current_ranking:
-            if player_score not in ranked_players_by_score:
-                ranked_players_by_score[player_score] = [player_name]
-            else:
-                ranked_players_by_score[player_score].append(player_name)
-
-        for score, player_list in ranked_players_by_score.items():
-            if len(player_list) > 1:
-                player_list = random.shuffle(player_list)
-            else:
-                pass
-
-        ranked_players = [player for score, players in ranked_players_by_score.items() for player in players]
-
-        if all(len(players) == 2 for players in ranked_players_by_score.values()):  # Forcing
-            print("Oupsie...")
-            random.shuffle(ranked_players)
-
-        return ranked_players
-
     def shuffle_players(self, tour_obj):
         soft_shuffle_counter = 0
 
@@ -222,7 +198,7 @@ class TournamentController:
             ranked_players = [player_name for player_name, player_score in sorted_ranking]
             print("Jouers mélangés ! Nouvelle liste :", ranked_players, soft_shuffle_counter)
             soft_shuffle_counter += 1
-            # return ranked_players
+            # return ranked_players  # TODO : Le soft_shuffle n'est jamais return
         if soft_shuffle_counter >= 50:
             current_ranking = self.ranking(tour_obj)
             random.shuffle(current_ranking)
@@ -257,7 +233,7 @@ def sort_players_alphabetical():  # TODO : Rouvrir le json pour datas actualisé
 class DataController:
     def __init__(self, dataname):
         self.database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'database.json')
-        self.database = TinyDB(self.database_path, indent=4, encoding='utf-8')
+        self.database = TinyDB(self.database_path, indent=4, encoding='utf-8', ensure_ascii=False)
         self.database.default_table_name = dataname
 
     def data_save(self, datas):
