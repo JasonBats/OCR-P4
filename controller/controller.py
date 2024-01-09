@@ -8,7 +8,7 @@ from rich import print
 import json
 import os
 import random
-from view.view import create_tournament_view
+from view.view import TournamentView
 from datetime import datetime
 from tinydb import TinyDB, Query
 
@@ -23,7 +23,8 @@ class MainController:
         self.data_controller = DataController("Tournaments")
 
     def run_tournament(self):
-        tournament_inputs = create_tournament_view()
+        tournament_view = TournamentView()
+        tournament_inputs = tournament_view.create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
         tournoi.tournament_list.append(created_tournament)
         print("Tournoi créé !")
@@ -31,6 +32,7 @@ class MainController:
         _, _, created_tournament.list_participants = self.tournament_controller.register_players()
         print(created_tournament)
         for i in range(1, int(created_tournament.round_number) + 1):
+            self.tournament_controller.soft_shuffle_counter = 0
             start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
             tour_obj = Tour(i, start_date=start_date, end_date="", match_list=[])
             print("Tour n°:", i)
@@ -59,21 +61,24 @@ class MainController:
         print("Saisissez le chiffre correspondant à votre choix.")
 
     def show_report(self):
-        report_choice = view.show_report_view()
+        tournament_reports = view.TournamentReports()
+        player_reports = view.PlayerReports()
+        report_choice = tournament_reports.show_report_view()
         if report_choice == 1:
-            print("Tous les joueurs par ordre alphabétique :", sort_players_alphabetical())
+            player_reports.show_all_players_alphabetical()
         if report_choice == 2:
-            print("Tous les tournois :", tournoi.tournament_list)
+            tournament_reports.show_tournament_list()
         if report_choice == 3:
-            view.show_tournament_name_dates()
+            tournament_reports.show_tournament_name_dates()
         if report_choice == 4:
-            view.show_tournament_participants()
+            tournament_reports.show_tournament_participants()
         if report_choice == 5:
             print("Liste de tous les tours du tournoi et de tous les matchs du tour")
-            view.show_tournament_rounds()
+            tournament_reports.show_tournament_rounds()
 
     def players_management(self):
-        view.manage_players()
+        player_view = view.PlayerView()
+        player_view.manage_players()
 
     menu_principal = {
         1: run_tournament,
@@ -82,9 +87,10 @@ class MainController:
     }
 
     def run(self):
+        main_view = view.MainView()
         while True:
             try:
-                main_menu = view.read_menu_selection()
+                main_menu = main_view.read_menu_selection()
                 if main_menu == 0:
                     break
                 if main_menu in self.menu_principal:
@@ -107,9 +113,10 @@ class TournamentController:
         self.tour_obj = None
 
     def add_player(self):
-        add = view.add_player()
+        player_view = view.PlayerView()
+        add = player_view.add_player()
         while add:
-            new_player = view.build_player()
+            new_player = player_view.build_player()
             try:
                 with open(self.database_path, "r", encoding="utf-8") as file:
                     player_base = json.load(file)
@@ -124,7 +131,7 @@ class TournamentController:
                 json.dump(player_base, file, default=lambda obj: new_player.__json__(), ensure_ascii=False, indent=2)
 
             print(new_player, " : Joueur inscrit avec succès")
-            add = view.add_player()
+            add = player_view.add_player()  # TODO : Vraie inscription
 
     def register_players(self):
         self.list_participants = random.sample(self.all_contenders, 6)
@@ -188,18 +195,18 @@ class TournamentController:
 
         return next_pairs
 
-    def shuffle_players(self, tour_obj):
-        soft_shuffle_counter = 0
+    soft_shuffle_counter = 0
 
-        while soft_shuffle_counter < 50:
+    def shuffle_players(self, tour_obj):
+        while self.soft_shuffle_counter < 50:
             current_ranking = self.ranking(tour_obj)
             random.shuffle(current_ranking)
             sorted_ranking = sorted(current_ranking, key=lambda x: x[1], reverse=True)
             ranked_players = [player_name for player_name, player_score in sorted_ranking]
-            print("Jouers mélangés ! Nouvelle liste :", ranked_players, soft_shuffle_counter)
-            soft_shuffle_counter += 1
-            # return ranked_players  # TODO : Le soft_shuffle n'est jamais return
-        if soft_shuffle_counter >= 50:
+            print("Jouers mélangés ! Nouvelle liste :", ranked_players, self.soft_shuffle_counter)
+            self.soft_shuffle_counter += 1
+            return ranked_players  # TODO : Le soft_shuffle n'est jamais return
+        if self.soft_shuffle_counter >= 50:
             current_ranking = self.ranking(tour_obj)
             random.shuffle(current_ranking)
             ranked_players = [player_name for player_name, player_score in current_ranking]
@@ -223,11 +230,6 @@ class TournamentController:
         print("Liste des matchs :", match_list)
         print("Classement :", ranking)
         return ranking
-
-
-def sort_players_alphabetical():  # TODO : Rouvrir le json pour datas actualisées
-    sorted_contenders = sorted(TournamentController.all_contenders, key=lambda player: player.nom)
-    return sorted_contenders
 
 
 class DataController:
