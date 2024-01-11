@@ -2,8 +2,6 @@ from rich import print
 from rich.console import Console
 from rich.table import Table
 from datetime import datetime
-
-from model.match import Match
 from model.player import Player
 import os
 import json
@@ -41,9 +39,12 @@ class TournamentView:
 
     @staticmethod
     def score_review(player_1, player_2, score_1, score_2):
-        verif = int(input(f"Le score est bien {player_1} {score_1}"
-                          f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON\n"))
-        return verif
+        try:
+            verif = int(input(f"Le score est bien {player_1} {score_1}"
+                              f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON\n"))
+            return verif
+        except ValueError:
+            print("Merci de saisir 1 pour OUI et 2 pour NON")
 
     @staticmethod
     def register_players():
@@ -57,7 +58,7 @@ class TournamentView:
                             player_base[chosen_player]['date_naissance'])
             contenders.append(player)
             print(f"{player} inscrit au tournoi ! [{len(contenders)}/{number_of_contenders}]")
-        print(contenders)
+        os.system('cls')
         return contenders
 
 
@@ -261,4 +262,12 @@ class ConsoleView:
             round_match_list = database['Tournaments'][chosen_tournament]['Round list'][index]['Match List']
             for match in round_match_list:
                 self.table.add_row(str(round_number), str(match))
+        self.console.print(self.table)
+
+    def display_ranking(self, ranking):
+        self.table = Table()
+        self.table.add_column("Joueur")
+        self.table.add_column("Score")
+        for player, score in ranking:
+            self.table.add_row(str(player), str(score))
         self.console.print(self.table)

@@ -8,7 +8,7 @@ from rich import print
 import json
 import os
 import random
-from view.view import TournamentView
+from view.view import TournamentView, ConsoleView
 from datetime import datetime
 from tinydb import TinyDB
 
@@ -23,6 +23,7 @@ class MainController:
         os.system('cls')
 
         tournament_view = TournamentView
+        console_view = ConsoleView("Informations")
         tournament_inputs = tournament_view.create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
         tournoi.tournament_list.append(created_tournament)
@@ -47,14 +48,12 @@ class MainController:
                 created_tournament.match_list.append(match_obj)
             tour_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
             created_tournament.round_list.append(tour_obj)
+            os.system('cls')
             print(created_tournament.round_list)
+            console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
         created_tournament.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
         self.data_controller.data_save(created_tournament.to_dict())
         print(created_tournament)
-
-        print("Générer un rapport :")
-        print("retour au menu principal :")
-        print("Saisissez le chiffre correspondant à votre choix.")
 
     def show_report(self):
         tournament_reports = view.TournamentReports()
@@ -116,7 +115,6 @@ class TournamentController:
         tournament_view = view.TournamentView()
         self.list_participants = tournament_view.register_players()
         self.initial_list = []
-        print("Liste des participants au tournoi :", self.list_participants)
         for index, element in enumerate(self.list_participants):
             self.initial_list.append(element)
             list_participants_copy = self.list_participants.copy()
@@ -141,7 +139,7 @@ class TournamentController:
         return generated_pairs
 
     def generate_pairs(self, tour_obj):
-        current_ranking = self.ranking(tour_obj.match_list)
+        current_ranking = self.get_ranking(tour_obj.match_list)
         ranked_players = [player for player, _ in current_ranking]
         next_pairs = []
 
@@ -178,7 +176,7 @@ class TournamentController:
     def shuffle_players(self, tour_obj):
         ranked_players = []
         while self.soft_shuffle_counter < 50:
-            current_ranking = self.ranking(tour_obj)
+            current_ranking = self.get_ranking(tour_obj)
             random.shuffle(current_ranking)
             sorted_ranking = sorted(current_ranking, key=lambda x: x[1], reverse=True)
             ranked_players = [player_name for player_name, player_score in sorted_ranking]
@@ -186,13 +184,14 @@ class TournamentController:
             self.soft_shuffle_counter += 1
             return ranked_players
         if self.soft_shuffle_counter >= 50:
-            current_ranking = self.ranking(tour_obj)
+            current_ranking = self.get_ranking(tour_obj)
             random.shuffle(current_ranking)
             ranked_players = [player_name for player_name, player_score in current_ranking]
         print("Joueurs mélangés mais alors genre VRAIMENT !!", ranked_players)
         return ranked_players
 
-    def ranking(self, match_list):
+    @staticmethod
+    def get_ranking(match_list):
         previous_matches = match_list
         scores_list_dict = {}
         for num, outcome in enumerate(previous_matches):
@@ -205,7 +204,6 @@ class TournamentController:
             scores_list_dict.setdefault(player_2, 0)
             scores_list_dict[player_2] += score_player_2
         ranking = sorted(scores_list_dict.items(), key=lambda item: item[1], reverse=True)
-        print("Classement :", ranking)
         return ranking
 
 
