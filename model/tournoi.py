@@ -34,6 +34,3 @@ class Tournoi:
                 f"Tour actuel : {self.current_round} / {self.round_number}."
                 f"Description : {self.description}"
                 f"\nListe des participants : {self.list_participants}")
-
-
-tournament_list = []

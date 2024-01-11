@@ -1,11 +1,8 @@
-from model import tournoi
 from model.tours import Tour
 from view import view
 from model.tournoi import Tournoi
-from model.player import Player
 from model.match import Match
 from rich import print
-import json
 import os
 import random
 from view.view import TournamentView, ConsoleView
@@ -26,9 +23,9 @@ class MainController:
         console_view = ConsoleView("Informations")
         tournament_inputs = tournament_view.create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
-        tournoi.tournament_list.append(created_tournament)
-        _, _, created_tournament.list_participants = self.tournament_controller.register_players()
+        _, _, created_tournament.list_participants = self.tournament_controller.players_registration()
         print(created_tournament)
+
         for i in range(1, int(created_tournament.round_number) + 1):
             self.tournament_controller.soft_shuffle_counter = 0
             start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
@@ -51,6 +48,7 @@ class MainController:
             os.system('cls')
             print(created_tournament.round_list)
             console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
+
         created_tournament.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
         self.data_controller.data_save(created_tournament.to_dict())
         print(created_tournament)
@@ -98,14 +96,13 @@ class MainController:
 
 
 class TournamentController:
-
     def __init__(self):
         self.tour_obj = None
         self.list_participants = []
         self.initial_list = []
         self.left_opponents_by_player = {}
 
-    def register_players(self):
+    def players_registration(self):
         tournament_view = view.TournamentView()
         self.list_participants = tournament_view.register_players()
         self.initial_list = []
