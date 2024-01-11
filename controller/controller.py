@@ -13,9 +13,6 @@ from datetime import datetime
 from tinydb import TinyDB
 
 
-# TODO : Maincontroller doit gérer ce qui est propre au programme. clean MainController et TournamentController
-
-
 class MainController:
 
     def __init__(self):
@@ -149,7 +146,7 @@ class TournamentController:
         next_pairs = []
 
         while ranked_players:
-            while True:  # TODO : Essayer une autre manière en parallèlle
+            while True:
                 index = 0
                 player_1 = ranked_players.pop(index)
                 try:
@@ -187,7 +184,7 @@ class TournamentController:
             ranked_players = [player_name for player_name, player_score in sorted_ranking]
             print("Jouers mélangés ! Nouvelle liste :", ranked_players, self.soft_shuffle_counter)
             self.soft_shuffle_counter += 1
-            return ranked_players  # TODO : Le soft_shuffle n'est jamais return
+            return ranked_players
         if self.soft_shuffle_counter >= 50:
             current_ranking = self.ranking(tour_obj)
             random.shuffle(current_ranking)
