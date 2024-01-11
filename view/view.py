@@ -138,7 +138,7 @@ class TournamentReports:
         console_view = ConsoleView("Détails d'un tournoi :")
         database = functional.open_database()
         console_view.display_tournament_name_dates(database)
-        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les détails ?\n")
+        chosen_tournament = input("De quel tournoi souhaitez-vous voir les détails ?\n")
         tournament_name = database['Tournaments'][chosen_tournament]['Tournament name']
         tournament_start_date = database['Tournaments'][chosen_tournament]['Start Date']
         tournament_end_date = database['Tournaments'][chosen_tournament]['End Date']
@@ -159,7 +159,7 @@ class TournamentReports:
         participants = []
         console_view = ConsoleView("Liste des tournois existants :")
         console_view.display_tournament_name_dates(database)
-        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les participants ?\n")
+        chosen_tournament = input("De quel tournoi souhaitez-vous voir les participants ?\n")
         for index, participant in enumerate(database['Tournaments'][chosen_tournament]['Contenders list']):
             participant_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['nom']
             participant_first_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['prenom']
@@ -178,7 +178,7 @@ class TournamentReports:
         database = functional.open_database()
         console_view = ConsoleView("Liste des tournois existants :")
         console_view.display_tournament_name_dates(database)
-        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les matchs de chaque tour ?\n")
+        chosen_tournament = input("De quel tournoi souhaitez-vous voir les matchs de chaque tour ?\n")
         console_view.display_tournament_details(database, chosen_tournament)
         return chosen_tournament
 

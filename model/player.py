@@ -6,13 +6,13 @@ class Player:
 
     def __repr__(self):
         return f"{self.nom} {self.prenom}"
-    
+
     def to_dict(self):
         return {
             'nom': self.nom,
             'prenom': self.prenom,
             'date_naissance': self.date_naissance
         }
-    
+
     def __json__(self):
         return self.to_dict()
