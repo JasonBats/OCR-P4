@@ -5,50 +5,12 @@ import os
 import json
 
 
-"""
-1 : demarrer un tournoi
-    # - Création d'un tournoi
-    #     - Nom
-    #     - Lieu
-    #     ...
-    # - inscrire joueurs
-    - Déroulement du 1er tour
-        - génerer 1ères paires
-        - inscrire résultats
-    - Déroulement 2e tour
-        - génerer paires
-            - Liste des joueurs triés par points
-            - Joueur n'ayant jamais rencontré son adversaire
-        - inscrire résultats
-    ...
-    - Génerer un rapport de tournoi avec toutes les infos possibles
-    - Choix Génerer un rapport VS retour menu principal
-
-2 : afficher un rapport
-    liste de tous les joueurs par ordre alphabétique ;
-    liste de tous les tournois ;
-    nom et dates d’un tournoi donné ;
-    liste des joueurs du tournoi par ordre alphabétique ;
-    liste de tous les tours du tournoi et de tous les matchs du tour
-
-3 : gestion utilisateurs
-    - Modifier informations
-    - Créer un nouvel utilisateur
-    - Supprimer un joueur
-    - Afficher utilisateurs
-
-
-https://rich.readthedocs.io/en/stable/introduction.html
-https://rich.readthedocs.io/en/stable/tables.html
-"""
-
-
 class TournamentView:
     def create_tournament_view(self):
         tournament_inputs = {
             'name': input("Quel est le nom du tournoi ?\n"),
             'location': input("Où se déroule le tournoi ?\n"),
-            'start_date': datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),  # Meilleures start_date et end_date
+            'start_date': datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
             'end_date': datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
             'description': input("Ajoutez une description pour ce tournoi (facultatif)\n"),
             'round_number': self.get_round_number()  # Fonction pour verifier le nombre de tours
@@ -58,22 +20,35 @@ class TournamentView:
     def get_round_number(self):
         while True:
             try:
-                return int(input("Combien de tours pour votre tournoi ? "))
+                return int(input("Combien de tours pour votre tournoi ?\n"))
             except ValueError:
                 print("Merci de saisir un nombre entier.")
 
     def write_score(self, player):
         try:
-            score = input(f"Quel score pour {player} ?")
+            score = input(f"Quel score pour {player} ?\n")
             return score
         except ValueError:
             print("Merci de saisir un nombre")
 
     def score_review(self, player_1, player_2, score_1, score_2):
         verif = int(input(f"Le score est bien {player_1} {score_1}"
-                          f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON"))
+                          f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON\n"))
         return verif
 
+    def register_players(self):
+        player_view = PlayerView()
+        contenders = []
+        number_of_contenders = int(input("Combien de participants à ce tournoi ?\n"))
+        player_base = player_view.show_all_players()
+        while len(contenders) < number_of_contenders:
+            chosen_player = int(input("Quel joueur souhaitez-vous inscrire à ce tournoi ?\n"))
+            player = Player(player_base[chosen_player]['nom'], player_base[chosen_player]['prenom'],
+                            player_base[chosen_player]['date_naissance'])
+            contenders.append(player)
+            print(f"{player} inscrit au tournoi ! [{len(contenders)}/{number_of_contenders}]")
+        print(contenders)
+        return contenders
 
 class PlayerView:
     def show_all_players(self):
@@ -83,6 +58,7 @@ class PlayerView:
         for index, player in enumerate(player_base):
             player_instance = Player(player["nom"], player["prenom"], player["date_naissance"])
             print(f"{index}. {player_instance}")
+        return player_base
 
     def manage_players(self):
         functional = Functional()
@@ -94,7 +70,7 @@ class PlayerView:
                                         "\n4 : Afficher la liste des joueurs\n"))
         if manage_players_menu == 1:
             self.show_all_players()
-            chosen_player = int(input("Quel joueur souhaitez-vous modifier ?"))
+            chosen_player = int(input("Quel joueur souhaitez-vous modifier ?\n"))
             self.edit_player_informations(player_base[chosen_player])
             functional.save_player_database(player_base)
             print(f"Modifications apportées à {player_base[chosen_player]}")
@@ -105,7 +81,7 @@ class PlayerView:
             functional.save_player_database(player_base)
         elif manage_players_menu == 3:
             self.show_all_players()
-            chosen_player = int(input("Quel joueur souhaitez-vous supprimer ?"))
+            chosen_player = int(input("Quel joueur souhaitez-vous supprimer ?\n"))
             print(f"{player_base[chosen_player]} supprimé")
             del player_base[chosen_player]
             functional.save_player_database(player_base)
@@ -114,20 +90,20 @@ class PlayerView:
 
     def edit_player_informations(self, player):
         for key in player.keys():
-            new_value = input(f"{key} [{player[key]}] :")
+            new_value = input(f"{key} [{player[key]}] :\n")
             if new_value:
                 player[key] = new_value
         return player
 
     def add_player(self):
-        add = int(input("Ajouter un joueur ? 1 = OUI / 0 = NON"))
+        add = int(input("Ajouter un joueur ? 1 = OUI / 0 = NON\n"))
         return add
 
     def build_player(self):
         new_player = Player(
-            nom=input("Quel est le nom du joueur ?"),
-            prenom=input("Quel est son prénom ?"),
-            date_naissance=input("Quelle est sa date de naissance ?"))
+            nom=input("Quel est le nom du joueur ?\n"),
+            prenom=input("Quel est son prénom ?\n"),
+            date_naissance=input("Quelle est sa date de naissance ? (AAAA-MM-JJ)\n"))
         return new_player
 
 
@@ -147,7 +123,7 @@ class TournamentReports:
         for tournament_id in database['Tournaments']:
             tournament_name = database['Tournaments'][tournament_id]['Tournament name']
             print(f"{tournament_id} - {tournament_name}")
-        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les détails ?")
+        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les détails ?\n")
         tournament_name = database['Tournaments'][chosen_tournament]['Tournament name']
         tournament_start_date = database['Tournaments'][chosen_tournament]['Start Date']
         tournament_end_date = database['Tournaments'][chosen_tournament]['End Date']
@@ -169,7 +145,7 @@ class TournamentReports:
         for tournament_id in database['Tournaments']:
             tournament_name = database['Tournaments'][tournament_id]['Tournament name']
             print(f"{tournament_id} - {tournament_name}")
-        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les participants ?")
+        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les participants ?\n")
         for index, participant in enumerate(database['Tournaments'][chosen_tournament]['Contenders list']):
             participant_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['nom']
             participant_first_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['prenom']
@@ -188,7 +164,7 @@ class TournamentReports:
         for tournament_id in database['Tournaments']:
             tournament_name = database['Tournaments'][tournament_id]['Tournament name']
             print(f"{tournament_id} - {tournament_name}")
-        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les matchs de chaque tour ?")
+        chosen_tournament = input(f"De quel tournoi souhaitez-vous voir les matchs de chaque tour ?\n")
         for index, tournament_round in enumerate(database['Tournaments'][chosen_tournament]['Round list']):
             round_number = database['Tournaments'][chosen_tournament]['Round list'][index]['Tour n°']
             round_start_date = database['Tournaments'][chosen_tournament]['Round list'][index]['Start Date']

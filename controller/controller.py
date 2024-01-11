@@ -28,7 +28,7 @@ class MainController:
         created_tournament = Tournoi(**tournament_inputs)
         tournoi.tournament_list.append(created_tournament)
         print("Tournoi créé !")
-        self.tournament_controller.add_player()
+        # self.tournament_controller.add_player()
         _, _, created_tournament.list_participants = self.tournament_controller.register_players()
         print(created_tournament)
         for i in range(1, int(created_tournament.round_number) + 1):
@@ -112,29 +112,9 @@ class TournamentController:
     def __init__(self):
         self.tour_obj = None
 
-    def add_player(self):
-        player_view = view.PlayerView()
-        add = player_view.add_player()
-        while add:
-            new_player = player_view.build_player()
-            try:
-                with open(self.database_path, "r", encoding="utf-8") as file:
-                    player_base = json.load(file)
-            except FileNotFoundError:
-                player_base = []
-
-            player_base.append(new_player.to_dict())
-            print("Liste de tous les joueurs :", player_base)
-            print(new_player)
-
-            with open(self.database_path, "w", encoding="utf-8") as file:
-                json.dump(player_base, file, default=lambda obj: new_player.__json__(), ensure_ascii=False, indent=2)
-
-            print(new_player, " : Joueur inscrit avec succès")
-            add = player_view.add_player()  # TODO : Vraie inscription
-
     def register_players(self):
-        self.list_participants = random.sample(self.all_contenders, 6)
+        tournament_view = view.TournamentView()
+        self.list_participants = tournament_view.register_players()
         self.initial_list = []
         print("Liste des participants au tournoi :", self.list_participants)
         self.left_opponents_by_player = {}
@@ -148,7 +128,6 @@ class TournamentController:
     def generate_first_pairs(self):
         generated_pairs = []
 
-        # TODO créer une liste plus intelligente (possibilité de sélectionner 6 joueurs)
         def pop_random(liste_participants):
             id_random = random.randrange(0, len(liste_participants))
             return liste_participants.pop(id_random)
