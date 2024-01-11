@@ -98,12 +98,6 @@ class MainController:
 
 
 class TournamentController:
-    database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'players_database.json')
-
-    with open(database_path, "r", encoding='utf-8') as file:
-        players_data = json.load(file)
-
-    all_contenders = [Player(joueur["nom"], joueur["prenom"], joueur["date_naissance"]) for joueur in players_data]
 
     def __init__(self):
         self.tour_obj = None
