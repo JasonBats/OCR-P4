@@ -1,4 +1,5 @@
 .idea/
 model/database.json
 model/players_database.json
+model/players_database - backup.json
 controller/tests.py
