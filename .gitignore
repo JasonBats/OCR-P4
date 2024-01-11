@@ -2,3 +2,4 @@
 model/database.json
 model/players_database.json
 model/players_database - backup.json
+.flake8_rapport/
