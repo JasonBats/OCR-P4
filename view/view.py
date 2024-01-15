@@ -40,8 +40,8 @@ class TournamentView:
     @staticmethod
     def score_review(player_1, player_2, score_1, score_2):
         try:
-            verification = int(input(f"Le score est bien {player_1} {score_1}"
-                              f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON\n"))
+            verification = int(input(f"Le score est bien {player_1} {score_1} "
+                                     f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON\n"))
             return verification
         except ValueError:
             print("Merci de saisir 1 pour OUI et 2 pour NON")
@@ -231,7 +231,8 @@ class PlayerReports:
         for index, player in enumerate(player_base):
             player_instance = Player(player["name"], player["first_name"], player["birth_date"])
             all_players.append(player_instance)
-        sorted_player_base = sorted(all_players, key=lambda player_sorted: (player_sorted.name, player_sorted.first_name))
+        sorted_player_base = sorted(all_players, key=lambda player_sorted: (player_sorted.name,
+                                                                            player_sorted.first_name))
         return sorted_player_base
 
 
