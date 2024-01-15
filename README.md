@@ -1,10 +1,6 @@
 # OCR-P4
 Projet n°4 : "Développez un programme logiciel en Python"
 
-To generate flake8 reports :
-
-
-
 Inside main directory :
 
 `flake8 --format=html --htmldir=flake8_rapport --exclude=venv,build --max-line-length=119` to generate flake8 report
