@@ -27,31 +27,34 @@ class MainController:
         print(created_tournament)
 
         for i in range(1, int(created_tournament.round_number) + 1):
-            self.tournament_controller.soft_shuffle_counter = 0
-            start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-            tour_obj = Tour(i, start_date=start_date, end_date="", match_list=[])
-            print("Tour n°:", i)
-            created_tournament.current_round += 1
-            if i == 1:
-                pairs = self.tournament_controller.generate_first_pairs()
-            else:
-                pairs = self.tournament_controller.generate_pairs(created_tournament)
-            print("Paires du tour", i, ":", pairs)
-            for pair in pairs:
-                match_obj = Match(*pair)
-                match_obj.encounter()
-                print(match_obj)
-                tour_obj.match_list.append(match_obj)
-                created_tournament.match_list.append(match_obj)
-            tour_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-            created_tournament.round_list.append(tour_obj)
-            os.system('cls')
-            print(created_tournament.round_list)
-            console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
+            self.run_round(created_tournament, i, console_view)
 
         created_tournament.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
         self.data_controller.data_save(created_tournament.to_dict())
         print(created_tournament)
+
+    def run_round(self, created_tournament, i, console_view):
+        self.tournament_controller.soft_shuffle_counter = 0
+        start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+        tour_obj = Tour(i, start_date=start_date, end_date="", match_list=[])
+        print("Tour n°:", i)
+        created_tournament.current_round += 1
+        if i == 1:
+            pairs = self.tournament_controller.generate_first_pairs()
+        else:
+            pairs = self.tournament_controller.generate_pairs(created_tournament)
+        print("Paires du tour", i, ":", pairs)
+        for pair in pairs:
+            match_obj = Match(*pair)
+            match_obj.encounter()
+            print(match_obj)
+            tour_obj.match_list.append(match_obj)
+            created_tournament.match_list.append(match_obj)
+        tour_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+        created_tournament.round_list.append(tour_obj)
+        os.system('cls')
+        print(created_tournament.round_list)
+        console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
 
     def show_report(self):
         tournament_reports = view.TournamentReports()
