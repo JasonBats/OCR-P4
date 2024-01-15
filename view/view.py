@@ -50,27 +50,31 @@ class TournamentView:
     def register_players():
         player_view = PlayerView()
         while True:
-            contenders = []
             number_of_contenders = int(input("Combien de participants à ce tournoi ?\n"))
             if number_of_contenders % 2 == 0:
-                player_base = player_view.show_all_players()
-                while len(contenders) < number_of_contenders:
-                    while True:
-                        try:
-                            chosen_player = int(input("Quel joueur souhaitez-vous inscrire à ce tournoi ?\n"))
-                            player = Player(player_base[chosen_player]['nom'], player_base[chosen_player]['prenom'],
-                                            player_base[chosen_player]['date_naissance'])
-                            break
-                        except ValueError:
-                            print("Veuillez saisir un nombre entier")
-                        except IndexError:
-                            print(f"Veuillez saisir un nombre entier entre 0 et {len(player_base) - 1}")
-                    contenders.append(player)
-                    print(f"{player} inscrit au tournoi ! [{len(contenders)}/{number_of_contenders}]")
-                os.system('cls')
-                return contenders
+                break
             else:
                 print("Veuillez saisir un nombre pair")
+
+        player_base = player_view.show_all_players()
+        contenders = []
+
+        while len(contenders) < number_of_contenders:
+            while True:
+                try:
+                    chosen_player = int(input("Quel joueur souhaitez-vous inscrire à ce tournoi ?\n"))
+                    if 0 <= chosen_player < len(player_base):
+                        player = Player(player_base[chosen_player]['nom'], player_base[chosen_player]['prenom'],
+                                        player_base[chosen_player]['date_naissance'])
+                        contenders.append(player)
+                        print(f"{player} inscrit au tournoi ! [{len(contenders)}/{number_of_contenders}]")
+                        break
+                    else:
+                        print(f"Veuillez saisir un nombre entier entre 0 et {len(player_base) - 1}")
+                except ValueError:
+                    print("Veuillez saisir un nombre entier")
+        os.system('cls')
+        return contenders
 
 
 class PlayerView:
