@@ -181,7 +181,7 @@ class TournamentController:
             current_ranking = self.get_ranking(tour_obj)
             random.shuffle(current_ranking)
             ranked_players = [player_name for player_name, player_score in current_ranking]
-        print("Joueurs mélangés mais alors genre VRAIMENT !!", ranked_players)
+        print("Joueurs mélangés sans classement ! Nouvelle liste :", ranked_players)
         return ranked_players
 
     @staticmethod
