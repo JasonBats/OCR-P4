@@ -165,7 +165,8 @@ class TournamentReports:
                 tournament_name = database['Tournaments'][chosen_tournament]['Tournament name']
                 tournament_start_date = database['Tournaments'][chosen_tournament]['Start Date']
                 tournament_end_date = database['Tournaments'][chosen_tournament]['End Date']
-                print(f"Tournoi '{tournament_name}'. S'est déroulé du {tournament_start_date} au {tournament_end_date}")
+                print(f"Tournoi '{tournament_name}'. "
+                      f"S'est déroulé du {tournament_start_date} au {tournament_end_date}")
                 return chosen_tournament
             except (ValueError, KeyError, IndexError):
                 print(f"Veuillez saisir un nombre entier entre 1 et {len(database['Tournaments'])}")
