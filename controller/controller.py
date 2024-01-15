@@ -1,4 +1,4 @@
-from model.tours import Tour
+from model.tours import Round
 from view import view
 from model.tournoi import Tournoi
 from model.match import Match
@@ -36,7 +36,7 @@ class MainController:
     def run_round(self, created_tournament, i, console_view):
         self.tournament_controller.soft_shuffle_counter = 0
         start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-        tour_obj = Tour(i, start_date=start_date, end_date="", match_list=[])
+        round_obj = Round(i, start_date=start_date, end_date="", match_list=[])
         print("Tour n°:", i)
         created_tournament.current_round += 1
         if i == 1:
@@ -48,10 +48,10 @@ class MainController:
             match_obj = Match(*pair)
             match_obj.encounter()
             print(match_obj)
-            tour_obj.match_list.append(match_obj)
+            round_obj.match_list.append(match_obj)
             created_tournament.match_list.append(match_obj)
-        tour_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-        created_tournament.round_list.append(tour_obj)
+        round_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+        created_tournament.round_list.append(round_obj)
         os.system('cls')
         print(created_tournament.round_list)
         console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
@@ -100,7 +100,7 @@ class MainController:
 
 class TournamentController:
     def __init__(self):
-        self.tour_obj = None
+        self.round_obj = None
         self.list_participants = []
         self.initial_list = []
         self.left_opponents_by_player = {}
@@ -132,8 +132,8 @@ class TournamentController:
             generated_pairs.append(random_pair)
         return generated_pairs
 
-    def generate_pairs(self, tour_obj):
-        current_ranking = self.get_ranking(tour_obj.match_list)
+    def generate_pairs(self, round_obj):
+        current_ranking = self.get_ranking(round_obj.match_list)
         ranked_players = [player for player, _ in current_ranking]
         next_pairs = []
 
@@ -155,7 +155,7 @@ class TournamentController:
                     break
                 except IndexError:
                     next_pairs = []
-                    ranked_players = TournamentController.shuffle_players(self, tour_obj.match_list)
+                    ranked_players = TournamentController.shuffle_players(self, round_obj.match_list)
             pair = (player_1, player_2)
             next_pairs.append(pair)
 
@@ -167,10 +167,10 @@ class TournamentController:
 
     soft_shuffle_counter = 0
 
-    def shuffle_players(self, tour_obj):
+    def shuffle_players(self, round_obj):
         ranked_players = []
         while self.soft_shuffle_counter < 50:
-            current_ranking = self.get_ranking(tour_obj)
+            current_ranking = self.get_ranking(round_obj)
             random.shuffle(current_ranking)
             sorted_ranking = sorted(current_ranking, key=lambda x: x[1], reverse=True)
             ranked_players = [player_name for player_name, player_score in sorted_ranking]
@@ -178,7 +178,7 @@ class TournamentController:
             self.soft_shuffle_counter += 1
             return ranked_players
         if self.soft_shuffle_counter >= 50:
-            current_ranking = self.get_ranking(tour_obj)
+            current_ranking = self.get_ranking(round_obj)
             random.shuffle(current_ranking)
             ranked_players = [player_name for player_name, player_score in current_ranking]
         print("Joueurs mélangés sans classement ! Nouvelle liste :", ranked_players)

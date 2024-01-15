@@ -23,10 +23,10 @@ class Match:
         else:
             print("Ce score n'existe pas. Saisissez 1 pour une victoire, 0.5 pour une égalité ou 0 pour une défaite")
             self.encounter()
-        verif = tournament_view.score_review(self.player_1, self.player_2, self.score_1, self.score_2)
-        if verif == 1:
+        verification = tournament_view.score_review(self.player_1, self.player_2, self.score_1, self.score_2)
+        if verification == 1:
             pass
-        elif verif == 2:
+        elif verification == 2:
             self.encounter()
         else:
             print("Choix invalide. Saisissez 1 pour OUI et 2 pour NON")

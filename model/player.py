@@ -1,17 +1,17 @@
 class Player:
-    def __init__(self, nom, prenom, date_naissance):
-        self.nom = nom
-        self.prenom = prenom
-        self.date_naissance = date_naissance
+    def __init__(self, name, first_name, birth_date):
+        self.name = name
+        self.first_name = first_name
+        self.birth_date = birth_date
 
     def __repr__(self):
-        return f"{self.nom} {self.prenom}"
+        return f"{self.name} {self.first_name}"
 
     def to_dict(self):
         return {
-            'nom': self.nom,
-            'prenom': self.prenom,
-            'date_naissance': self.date_naissance
+            'name': self.name,
+            'first_name': self.first_name,
+            'birth_date': self.birth_date
         }
 
     def __json__(self):

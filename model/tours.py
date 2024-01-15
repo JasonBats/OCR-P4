@@ -1,4 +1,4 @@
-class Tour:
+class Round:
     def __init__(self, name, start_date, end_date, match_list):
         self.name = name
         self.start_date = start_date

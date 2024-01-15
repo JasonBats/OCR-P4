@@ -6,7 +6,7 @@ class Tournoi:
                  description="",
                  round_number=4):
         self.name = name
-        self.lieu = location
+        self.location = location
         self.start_date = start_date
         self.end_date = end_date
         self.current_round = 0
@@ -19,7 +19,7 @@ class Tournoi:
     def to_dict(self):
         return {
             'Tournament name': self.name,
-            'Place': self.lieu,
+            'Place': self.location,
             'Tournament description': self.description,
             'Start Date': self.start_date,
             'End Date': self.end_date,
@@ -30,7 +30,7 @@ class Tournoi:
         }
 
     def __repr__(self):
-        return (f"Nom du tournoi : {self.name}, à {self.lieu}, du {self.start_date} au {self.end_date}."
+        return (f"Nom du tournoi : {self.name}, à {self.location}, du {self.start_date} au {self.end_date}."
                 f"Tour actuel : {self.current_round} / {self.round_number}."
                 f"Description : {self.description}"
                 f"\nListe des participants : {self.list_participants}")

@@ -40,9 +40,9 @@ class TournamentView:
     @staticmethod
     def score_review(player_1, player_2, score_1, score_2):
         try:
-            verif = int(input(f"Le score est bien {player_1} {score_1}"
+            verification = int(input(f"Le score est bien {player_1} {score_1}"
                               f"VS {player_2} {score_2} ? 1 = OUI / 2 = NON\n"))
-            return verif
+            return verification
         except ValueError:
             print("Merci de saisir 1 pour OUI et 2 pour NON")
 
@@ -64,8 +64,8 @@ class TournamentView:
                 try:
                     chosen_player = int(input("Quel joueur souhaitez-vous inscrire à ce tournoi ?\n"))
                     if 0 <= chosen_player < len(player_base):
-                        player = Player(player_base[chosen_player]['nom'], player_base[chosen_player]['prenom'],
-                                        player_base[chosen_player]['date_naissance'])
+                        player = Player(player_base[chosen_player]['name'], player_base[chosen_player]['first_name'],
+                                        player_base[chosen_player]['birth_date'])
                         contenders.append(player)
                         print(f"{player} inscrit au tournoi ! [{len(contenders)}/{number_of_contenders}]")
                         break
@@ -85,7 +85,7 @@ class PlayerView:
         console_view = ConsoleView("Liste de tous les joueurs :")
         player_list = []
         for index, player in enumerate(player_base):
-            player_instance = Player(player["nom"], player["prenom"], player["date_naissance"])
+            player_instance = Player(player["name"], player["first_name"], player["birth_date"])
             player_list.append(player_instance)
         console_view.display_player_list(player_list)
         return player_base
@@ -139,9 +139,9 @@ class PlayerView:
     @staticmethod
     def build_player():
         new_player = Player(
-            nom=input("Quel est le nom du joueur ?\n"),
-            prenom=input("Quel est son prénom ?\n"),
-            date_naissance=input("Quelle est sa date de naissance ? (AAAA-MM-JJ)\n"))
+            name=input("Quel est le nom du joueur ?\n"),
+            first_name=input("Quel est son prénom ?\n"),
+            birth_date=input("Quelle est sa date de naissance ? (AAAA-MM-JJ)\n"))
         return new_player
 
 
@@ -193,15 +193,15 @@ class TournamentReports:
             try:
                 chosen_tournament = input("De quel tournoi souhaitez-vous voir les participants ?\n")
                 for index, participant in enumerate(database['Tournaments'][chosen_tournament]['Contenders list']):
-                    participant_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['nom']
+                    participant_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['name']
                     participant_first_name = database['Tournaments'][chosen_tournament]['Contenders list'][index][
-                        'prenom']
+                        'first_name']
                     participant_birthdate = database['Tournaments'][chosen_tournament]['Contenders list'][index][
-                        'date_naissance']
+                        'birth_date']
                     participant = Player(participant_name, participant_first_name, participant_birthdate)
                     participants.append(participant)
-                participants_alphabetical = sorted(participants, key=lambda player_sorted: (player_sorted.nom,
-                                                                                            player_sorted.prenom))
+                participants_alphabetical = sorted(participants, key=lambda player_sorted: (player_sorted.name,
+                                                                                            player_sorted.first_name))
                 console_view.display_player_list(participants_alphabetical)
                 return chosen_tournament
             except (KeyError, ValueError, IndexError):
@@ -229,9 +229,9 @@ class PlayerReports:
         player_base = functional.open_players_database()
         all_players = []
         for index, player in enumerate(player_base):
-            player_instance = Player(player["nom"], player["prenom"], player["date_naissance"])
+            player_instance = Player(player["name"], player["first_name"], player["birth_date"])
             all_players.append(player_instance)
-        sorted_player_base = sorted(all_players, key=lambda player_sorted: (player_sorted.nom, player_sorted.prenom))
+        sorted_player_base = sorted(all_players, key=lambda player_sorted: (player_sorted.name, player_sorted.first_name))
         return sorted_player_base
 
 
@@ -281,7 +281,7 @@ class ConsoleView:
         self.table.add_column("Prenom")
         self.database = database
         for index, player in enumerate(database):
-            self.table.add_row(str(index), player.nom, player.prenom)
+            self.table.add_row(str(index), player.name, player.first_name)
         self.console.print(self.table)
 
     def display_tournament_name_dates(self, database):

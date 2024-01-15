@@ -1,72 +1,72 @@
 [
   {
-    "nom": "Dubois",
-    "prenom": "Luc",
-    "date_naissance": "1988-04-20"
+    "name": "Dubois",
+    "first_name": "Luc",
+    "birth_date": "1988-04-20"
   },
   {
-    "nom": "Martin",
-    "prenom": "Amandine",
-    "date_naissance": "1986-11-15"
+    "name": "Martin",
+    "first_name": "Amandine",
+    "birth_date": "1986-11-15"
   },
   {
-    "nom": "Lefevre",
-    "prenom": "Pierre",
-    "date_naissance": "1984-07-02"
+    "name": "Lefevre",
+    "first_name": "Pierre",
+    "birth_date": "1984-07-02"
   },
   {
-    "nom": "Dupont",
-    "prenom": "Isabelle",
-    "date_naissance": "1980-09-18"
+    "name": "Dupont",
+    "first_name": "Isabelle",
+    "birth_date": "1980-09-18"
   },
   {
-    "nom": "Moreau",
-    "prenom": "Sophie",
-    "date_naissance": "1978-05-25"
+    "name": "Moreau",
+    "first_name": "Sophie",
+    "birth_date": "1978-05-25"
   },
   {
-    "nom": "Girard",
-    "prenom": "Antoine",
-    "date_naissance": "1975-12-30"
+    "name": "Girard",
+    "first_name": "Antoine",
+    "birth_date": "1975-12-30"
   },
   {
-    "nom": "Fontaine",
-    "prenom": "Marie",
-    "date_naissance": "1989-08-12"
+    "name": "Fontaine",
+    "first_name": "Marie",
+    "birth_date": "1989-08-12"
   },
   {
-    "nom": "Gauthier",
-    "prenom": "Julie",
-    "date_naissance": "1979-09-22"
+    "name": "Gauthier",
+    "first_name": "Julie",
+    "birth_date": "1979-09-22"
   },
   {
-    "nom": "Marchand",
-    "prenom": "François",
-    "date_naissance": "1986-11-05"
+    "name": "Marchand",
+    "first_name": "François",
+    "birth_date": "1986-11-05"
   },
   {
-    "nom": "Morin",
-    "prenom": "Camille",
-    "date_naissance": "1984-07-20"
+    "name": "Morin",
+    "first_name": "Camille",
+    "birth_date": "1984-07-20"
   },
   {
-    "nom": "Guerin",
-    "prenom": "Thomas",
-    "date_naissance": "1980-09-03"
+    "name": "Guerin",
+    "first_name": "Thomas",
+    "birth_date": "1980-09-03"
   },
   {
-    "nom": "Fournier",
-    "prenom": "Caroline",
-    "date_naissance": "1982-03-18"
+    "name": "Fournier",
+    "first_name": "Caroline",
+    "birth_date": "1982-03-18"
   },
   {
-    "nom": "Jonas",
-    "prenom": "Michel",
-    "date_naissance": "09/09/1990"
+    "name": "Jonas",
+    "first_name": "Michel",
+    "birth_date": "09/09/1990"
   },
   {
-    "nom": "Aoki",
-    "prenom": "Steve",
-    "date_naissance": "09/09/1990"
+    "name": "Aoki",
+    "first_name": "Steve",
+    "birth_date": "09/09/1990"
   }
 ]
