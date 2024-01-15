@@ -8,5 +8,3 @@ flake8 --format=html --htmldir=flake8_rapport --exclude=venv,build --max-line-le
 To run the program :
 
 python run.py
-
-Make sure to register an even number of contenders, or the program will crash

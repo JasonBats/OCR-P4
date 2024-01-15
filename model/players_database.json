@@ -20,11 +20,6 @@
     "date_naissance": "1980-09-18"
   },
   {
-    "nom": "Leroy",
-    "prenom": "Alexandre",
-    "date_naissance": "1982-03-10"
-  },
-  {
     "nom": "Moreau",
     "prenom": "Sophie",
     "date_naissance": "1978-05-25"
@@ -38,16 +33,6 @@
     "nom": "Fontaine",
     "prenom": "Marie",
     "date_naissance": "1989-08-12"
-  },
-  {
-    "nom": "Chevalier",
-    "prenom": "Nicolas",
-    "date_naissance": "1987-01-05"
-  },
-  {
-    "nom": "Roux",
-    "prenom": "Claire",
-    "date_naissance": "1983-06-28"
   },
   {
     "nom": "Gauthier",

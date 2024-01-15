@@ -49,17 +49,28 @@ class TournamentView:
     @staticmethod
     def register_players():
         player_view = PlayerView()
-        contenders = []
-        number_of_contenders = int(input("Combien de participants à ce tournoi ?\n"))
-        player_base = player_view.show_all_players()
-        while len(contenders) < number_of_contenders:
-            chosen_player = int(input("Quel joueur souhaitez-vous inscrire à ce tournoi ?\n"))
-            player = Player(player_base[chosen_player]['nom'], player_base[chosen_player]['prenom'],
-                            player_base[chosen_player]['date_naissance'])
-            contenders.append(player)
-            print(f"{player} inscrit au tournoi ! [{len(contenders)}/{number_of_contenders}]")
-        os.system('cls')
-        return contenders
+        while True:
+            contenders = []
+            number_of_contenders = int(input("Combien de participants à ce tournoi ?\n"))
+            if number_of_contenders % 2 == 0:
+                player_base = player_view.show_all_players()
+                while len(contenders) < number_of_contenders:
+                    while True:
+                        try:
+                            chosen_player = int(input("Quel joueur souhaitez-vous inscrire à ce tournoi ?\n"))
+                            player = Player(player_base[chosen_player]['nom'], player_base[chosen_player]['prenom'],
+                                            player_base[chosen_player]['date_naissance'])
+                            break
+                        except ValueError:
+                            print("Veuillez saisir un nombre entier")
+                        except IndexError:
+                            print(f"Veuillez saisir un nombre entier entre 0 et {len(player_base) - 1}")
+                    contenders.append(player)
+                    print(f"{player} inscrit au tournoi ! [{len(contenders)}/{number_of_contenders}]")
+                os.system('cls')
+                return contenders
+            else:
+                print("Veuillez saisir un nombre pair")
 
 
 class PlayerView:
@@ -84,22 +95,32 @@ class PlayerView:
                                         "\n3 : Supprimer un joueur"
                                         "\n4 : Afficher la liste des joueurs\n"))
         if manage_players_menu == 1:
-            self.show_all_players()
-            chosen_player = int(input("Quel joueur souhaitez-vous modifier ?\n"))
-            self.edit_player_informations(player_base[chosen_player])
-            functional.save_player_database(player_base)
-            print(f"Modifications apportées à {player_base[chosen_player]}")
+            player_base = self.show_all_players()
+            while True:
+                try:
+                    chosen_player = int(input("Quel joueur souhaitez-vous modifier ?\n"))
+                    self.edit_player_informations(player_base[chosen_player])
+                    functional.save_player_database(player_base)
+                    print(f"Modifications apportées à {player_base[chosen_player]}")
+                    break
+                except (IndexError, ValueError):
+                    print(f"Veuillez saisir un nombre entier entre 0 et {len(player_base) - 1}")
         elif manage_players_menu == 2:
             new_player = self.build_player()
             player_base.append(new_player.to_dict())
             print(f"\n[{new_player}] ajouté à la base de données des joueurs.")
             functional.save_player_database(player_base)
         elif manage_players_menu == 3:
-            self.show_all_players()
-            chosen_player = int(input("Quel joueur souhaitez-vous supprimer ?\n"))
-            print(f"{player_base[chosen_player]} supprimé")
-            del player_base[chosen_player]
-            functional.save_player_database(player_base)
+            player_base = self.show_all_players()
+            while True:
+                try:
+                    chosen_player = int(input("Quel joueur souhaitez-vous supprimer ?\n"))
+                    print(f"{player_base[chosen_player]} supprimé")
+                    del player_base[chosen_player]
+                    functional.save_player_database(player_base)
+                    break
+                except (IndexError, ValueError):
+                    print(f"Veuillez saisir un nombre entier entre 0 et {len(player_base) - 1}")
         elif manage_players_menu == 4:
             self.show_all_players()
 
@@ -138,12 +159,16 @@ class TournamentReports:
         console_view = ConsoleView("Détails d'un tournoi :")
         database = functional.open_database()
         console_view.display_tournament_name_dates(database)
-        chosen_tournament = input("De quel tournoi souhaitez-vous voir les détails ?\n")
-        tournament_name = database['Tournaments'][chosen_tournament]['Tournament name']
-        tournament_start_date = database['Tournaments'][chosen_tournament]['Start Date']
-        tournament_end_date = database['Tournaments'][chosen_tournament]['End Date']
-        print(f"Tournoi '{tournament_name}'. S'est déroulé du {tournament_start_date} au {tournament_end_date}")
-        return chosen_tournament
+        while True:
+            try:
+                chosen_tournament = input("De quel tournoi souhaitez-vous voir les détails ?\n")
+                tournament_name = database['Tournaments'][chosen_tournament]['Tournament name']
+                tournament_start_date = database['Tournaments'][chosen_tournament]['Start Date']
+                tournament_end_date = database['Tournaments'][chosen_tournament]['End Date']
+                print(f"Tournoi '{tournament_name}'. S'est déroulé du {tournament_start_date} au {tournament_end_date}")
+                return chosen_tournament
+            except (ValueError, KeyError, IndexError):
+                print(f"Veuillez saisir un nombre entier entre 1 et {len(database['Tournaments'])}")
 
     @staticmethod
     def show_tournament_list():
@@ -159,18 +184,23 @@ class TournamentReports:
         participants = []
         console_view = ConsoleView("Liste des tournois existants :")
         console_view.display_tournament_name_dates(database)
-        chosen_tournament = input("De quel tournoi souhaitez-vous voir les participants ?\n")
-        for index, participant in enumerate(database['Tournaments'][chosen_tournament]['Contenders list']):
-            participant_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['nom']
-            participant_first_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['prenom']
-            participant_birthdate = database['Tournaments'][chosen_tournament]['Contenders list'][index][
-                'date_naissance']
-            participant = Player(participant_name, participant_first_name, participant_birthdate)
-            participants.append(participant)
-        participants_alphabetical = sorted(participants, key=lambda player_sorted: (player_sorted.nom,
-                                                                                    player_sorted.prenom))
-        console_view.display_player_list(participants_alphabetical)
-        return chosen_tournament
+        while True:
+            try:
+                chosen_tournament = input("De quel tournoi souhaitez-vous voir les participants ?\n")
+                for index, participant in enumerate(database['Tournaments'][chosen_tournament]['Contenders list']):
+                    participant_name = database['Tournaments'][chosen_tournament]['Contenders list'][index]['nom']
+                    participant_first_name = database['Tournaments'][chosen_tournament]['Contenders list'][index][
+                        'prenom']
+                    participant_birthdate = database['Tournaments'][chosen_tournament]['Contenders list'][index][
+                        'date_naissance']
+                    participant = Player(participant_name, participant_first_name, participant_birthdate)
+                    participants.append(participant)
+                participants_alphabetical = sorted(participants, key=lambda player_sorted: (player_sorted.nom,
+                                                                                            player_sorted.prenom))
+                console_view.display_player_list(participants_alphabetical)
+                return chosen_tournament
+            except (KeyError, ValueError, IndexError):
+                print(f"Veuillez saisir un nombre entier entre 1 et {len(database['Tournaments'])}")
 
     @staticmethod
     def show_tournament_rounds():
@@ -178,9 +208,13 @@ class TournamentReports:
         database = functional.open_database()
         console_view = ConsoleView("Liste des tournois existants :")
         console_view.display_tournament_name_dates(database)
-        chosen_tournament = input("De quel tournoi souhaitez-vous voir les matchs de chaque tour ?\n")
-        console_view.display_tournament_details(database, chosen_tournament)
-        return chosen_tournament
+        while True:
+            try:
+                chosen_tournament = input("De quel tournoi souhaitez-vous voir les matchs de chaque tour ?\n")
+                console_view.display_tournament_details(database, chosen_tournament)
+                return chosen_tournament
+            except (KeyError, ValueError, IndexError):
+                print(f"Veuillez saisir un nombre entier entre 1 et {len(database['Tournaments'])}")
 
 
 class PlayerReports:
