@@ -1,3 +1,4 @@
+from model.player import Player
 from model.tours import Round
 from view import view
 from model.tournoi import Tournoi
@@ -7,7 +8,7 @@ import os
 import random
 from view.view import TournamentView, ConsoleView
 from datetime import datetime
-from tinydb import TinyDB
+from tinydb import TinyDB, Query
 
 
 class MainController:
@@ -18,43 +19,44 @@ class MainController:
 
     def run_tournament(self):
         os.system('cls')
-
+        # self.data_controller.resume_tournament()
         tournament_view = TournamentView
         console_view = ConsoleView("Informations")
         tournament_inputs = tournament_view.create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
         _, _, created_tournament.list_participants = self.tournament_controller.players_registration()
-        print(created_tournament)
+        view.TournamentView.print_created_tournament(created_tournament)
 
         for i in range(1, int(created_tournament.round_number) + 1):
             self.run_round(created_tournament, i, console_view)
 
         created_tournament.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-        self.data_controller.data_save(created_tournament.to_dict())
-        print(created_tournament)
+        self.data_controller.data_save(created_tournament.to_dict())  # Sauvegarde à la fin du tournoi
+        view.TournamentView.print_created_tournament(created_tournament)
 
     def run_round(self, created_tournament, i, console_view):
         self.tournament_controller.soft_shuffle_counter = 0
         start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
         round_obj = Round(i, start_date=start_date, end_date="", match_list=[])
-        print("Tour n°:", i)
+        view.TournamentView.print_round_number(i)
         created_tournament.current_round += 1
         if i == 1:
             pairs = self.tournament_controller.generate_first_pairs()
         else:
             pairs = self.tournament_controller.generate_pairs(created_tournament)
-        print("Paires du tour", i, ":", pairs)
+        view.TournamentView.print_current_round_pairs(i, pairs)
         for pair in pairs:
             match_obj = Match(*pair)
             match_obj.encounter()
-            print(match_obj)
+            view.TournamentView.print_match_obj(match_obj)
             round_obj.match_list.append(match_obj)
             created_tournament.match_list.append(match_obj)
         round_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
         created_tournament.round_list.append(round_obj)
         os.system('cls')
-        print(created_tournament.round_list)
+        view.TournamentView.print_round_list(created_tournament.round_list)
         console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
+        # self.data_controller.data_save(created_tournament.to_dict())  # Sauvegarde à la fin du round
 
     def show_report(self):
         tournament_reports = view.TournamentReports()
@@ -70,7 +72,6 @@ class MainController:
         if report_choice == 4:
             tournament_reports.show_tournament_participants()
         if report_choice == 5:
-            print("Liste de tous les tours du tournoi et de tous les matchs du tour")
             tournament_reports.show_tournament_rounds()
 
     def players_management(self):
@@ -93,9 +94,9 @@ class MainController:
                 if main_menu in self.menu_principal:
                     self.menu_principal[main_menu](self)
                 else:
-                    print("Veuillez saisir le chiffre correspondant à votre choix.")
+                    main_view.incorrect_menu_selection()
             except ValueError:
-                print("Veuillez saisir un nombre entier")
+                main_view.menu_selection_value_error()
 
 
 class TournamentController:
@@ -174,7 +175,7 @@ class TournamentController:
             random.shuffle(current_ranking)
             sorted_ranking = sorted(current_ranking, key=lambda x: x[1], reverse=True)
             ranked_players = [player_name for player_name, player_score in sorted_ranking]
-            print("Jouers mélangés ! Nouvelle liste :", ranked_players, self.soft_shuffle_counter)
+            view.MainView.print_shuffled_players(ranked_players)
             self.soft_shuffle_counter += 1
             return ranked_players
         if self.soft_shuffle_counter >= 50:
@@ -182,6 +183,7 @@ class TournamentController:
             random.shuffle(current_ranking)
             ranked_players = [player_name for player_name, player_score in current_ranking]
         print("Joueurs mélangés sans classement ! Nouvelle liste :", ranked_players)
+        view.MainView.print_shuffled_players(ranked_players)
         return ranked_players
 
     @staticmethod
@@ -209,3 +211,56 @@ class DataController:
 
     def data_save(self, datas):
         self.database.insert(datas)
+
+# VVVVVVVVVVVV Tentative de sauvegarde du fichier
+
+    def get_unfinished_tournaments(self):
+        unfinished_tournaments = []
+        for tournament in self.database:
+            if tournament['Current Round'] < tournament['Total Round(s)']:
+                unfinished_tournaments.append(tournament.doc_id)
+                # print(f"{tournament.doc_id}, {tournament['Tournament name']} : Round {tournament['Current Round']} / "
+                #       f"{tournament['Total Round(s)']}")
+        return unfinished_tournaments
+
+    def choose_unfinished_tournament(self):
+        unfinished_tournaments = self.get_unfinished_tournaments()
+        if unfinished_tournaments:
+            print("Veuillez choisir un tournoi à reprendre (entrez son ID)")
+            choice = int(input())
+            if choice in unfinished_tournaments:
+                return choice
+            else:
+                print("ID inexistant")
+                return None
+        else:
+            print("Aucun tournoi inachevé")
+            return None
+
+    def load_tournament(self, tournament_id):
+        tournament_data = self.database.get(doc_id=tournament_id)
+        if tournament_data:
+            return tournament_data
+        else:
+            print("Touirnoi introuvable")
+            return None
+
+    def resume_tournament(self):
+        tournament_id = self.choose_unfinished_tournament()
+        if tournament_id:
+            tournament_data = self.load_tournament(tournament_id)
+            if tournament_data:
+                resumed_tournament = Tournoi(name=tournament_data['Tournament name'],
+                                             location=tournament_data['Place'],
+                                             start_date=tournament_data['Start Date'],
+                                             end_date=tournament_data['End Date'],
+                                             description=tournament_data['Tournament description'],
+                                             round_number=tournament_data['Total Round(s)'])
+                resumed_tournament.current_round = tournament_data['Current Round']
+                resumed_tournament.list_participants = [Player(**player_data) for player_data in tournament_data['Contenders list']]
+                resumed_tournament.current_round = [Round(**round_data) for round_data in tournament_data['Round list']]
+                resumed_tournament.round_list = tournament_data['Round list']
+                resumed_tournament.match_list = [Match(**match_data) for match_data in tournament_data['Match List']]
+
+                return resumed_tournament
+

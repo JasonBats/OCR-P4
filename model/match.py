@@ -21,7 +21,7 @@ class Match:
         elif self.score_1 == "0.5":
             self.score_2 = "0.5"
         else:
-            print("Ce score n'existe pas. Saisissez 1 pour une victoire, 0.5 pour une égalité ou 0 pour une défaite")
+            view.view.TournamentView.incorrect_score()
             self.encounter()
         verification = tournament_view.score_review(self.player_1, self.player_2, self.score_1, self.score_2)
         if verification == 1:
@@ -29,7 +29,7 @@ class Match:
         elif verification == 2:
             self.encounter()
         else:
-            print("Choix invalide. Saisissez 1 pour OUI et 2 pour NON")
+            view.view.TournamentView.incorrect_verif()
             self.encounter()
 
     def __repr__(self):
@@ -39,3 +39,11 @@ class Match:
         return {
             "Match": f"{self.player_1} {self.score_1} VS {self.score_2} {self.player_2}"
         }
+
+    # def to_dict(self):
+    #     return {
+    #         "Player1": self.player_1,
+    #         "Player2": self.player_2,
+    #         "Score1": self.score_1,
+    #         "Score2": self.score_2
+    #     }

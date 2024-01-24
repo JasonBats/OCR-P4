@@ -32,7 +32,7 @@ class TournamentView:
     @staticmethod
     def write_score(player):
         try:
-            score = input(f"Quel score pour {player} ?\n")
+            score = input(f"Quel score pour {player} ?\n(1 = Victoire / 0.5 = Nul / 0 = Défaite)\n")
             return score
         except ValueError:
             print("Merci de saisir un nombre")
@@ -76,6 +76,33 @@ class TournamentView:
         os.system('cls')
         return contenders
 
+    @staticmethod
+    def incorrect_score():
+        print("Ce score n'existe pas. Saisissez 1 pour une victoire, 0.5 pour une égalité ou 0 pour une défaite")
+
+    @staticmethod
+    def incorrect_verif():
+        print("Choix invalide. Saisissez 1 pour OUI et 2 pour NON")
+
+    @staticmethod
+    def print_created_tournament(created_tournament):
+        print(created_tournament)
+
+    @staticmethod
+    def print_round_number(round_number):
+        print("Tour n°:", round_number)
+
+    @staticmethod
+    def print_current_round_pairs(round_number, pairs):
+        print("Paires du tour", round_number, ":", pairs)
+
+    @staticmethod
+    def print_match_obj(match_obj):
+        print(match_obj)
+
+    @staticmethod
+    def print_round_list(round_list):
+        print(round_list)
 
 class PlayerView:
     @staticmethod
@@ -267,6 +294,19 @@ class MainView:
                               "\n2 : Afficher un rapport"
                               "\n3 : Gerer des utilisateurs\n"))
         return main_menu
+
+    @staticmethod
+    def incorrect_menu_selection():
+        print("Veuillez saisir le chiffre correspondant à votre choix.")
+
+    @staticmethod
+    def menu_selection_value_error():
+        print("Veuillez saisir un nombre entier")
+
+    @staticmethod
+    def print_shuffled_players(ranked_players):
+        print("Joueurs mélangés ! Nouvelle liste :", ranked_players)
+
 
 
 class ConsoleView:
