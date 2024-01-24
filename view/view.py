@@ -291,8 +291,9 @@ class MainView:
     def read_menu_selection():
         main_menu = int(input("\nQue souhaitez-vous faire ? \n"
                               "\n1 : Démarrer un tournoi"
-                              "\n2 : Afficher un rapport"
-                              "\n3 : Gerer des utilisateurs\n"))
+                              "\n2 : Reprendre un tournoi"
+                              "\n3 : Afficher un rapport"
+                              "\n4 : Gerer des utilisateurs\n"))
         return main_menu
 
     @staticmethod

@@ -1,3 +1,6 @@
+import uuid
+
+
 class Tournoi:
     def __init__(self, name="",
                  location="",
@@ -5,6 +8,7 @@ class Tournoi:
                  end_date="",
                  description="",
                  round_number=4):
+        self.id = str(uuid.uuid4())
         self.name = name
         self.location = location
         self.start_date = start_date
@@ -18,6 +22,7 @@ class Tournoi:
 
     def to_dict(self):
         return {
+            'Tournament ID': self.id,
             'Tournament name': self.name,
             'Place': self.location,
             'Tournament description': self.description,
@@ -25,8 +30,8 @@ class Tournoi:
             'End Date': self.end_date,
             'Current Round': self.current_round,
             'Total Round(s)': self.round_number,
-            'Round list': [tour.to_dict() for tour in self.round_list],
-            'Contenders list': [player.to_dict() for player in self.list_participants],
+            'Round list': [tour.__json__() for tour in self.round_list],
+            'Contenders list': [player.__json__() for player in self.list_participants],
         }
 
     def __repr__(self):

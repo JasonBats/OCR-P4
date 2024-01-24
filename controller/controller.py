@@ -19,7 +19,6 @@ class MainController:
 
     def run_tournament(self):
         os.system('cls')
-        # self.data_controller.resume_tournament()
         tournament_view = TournamentView
         console_view = ConsoleView("Informations")
         tournament_inputs = tournament_view.create_tournament_view()
@@ -33,6 +32,14 @@ class MainController:
         created_tournament.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
         self.data_controller.data_save(created_tournament.to_dict())  # Sauvegarde à la fin du tournoi
         view.TournamentView.print_created_tournament(created_tournament)
+
+    def continue_tournament(self):
+        console_view = ConsoleView("Informations")
+        unfinished_tournament = self.data_controller.resume_tournament()
+
+        for i in range(unfinished_tournament.current_round, int(unfinished_tournament.round_number) + 1):
+            self.run_round(unfinished_tournament, unfinished_tournament.current_round, console_view)
+        # Je reprendrai plus tard...
 
     def run_round(self, created_tournament, i, console_view):
         self.tournament_controller.soft_shuffle_counter = 0
@@ -56,7 +63,7 @@ class MainController:
         os.system('cls')
         view.TournamentView.print_round_list(created_tournament.round_list)
         console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
-        # self.data_controller.data_save(created_tournament.to_dict())  # Sauvegarde à la fin du round
+        self.data_controller.data_save(created_tournament.to_dict())  # Sauvegarde à la fin du round
 
     def show_report(self):
         tournament_reports = view.TournamentReports()
@@ -80,8 +87,9 @@ class MainController:
 
     menu_principal = {
         1: run_tournament,
-        2: show_report,
-        3: players_management
+        2: continue_tournament,
+        3: show_report,
+        4: players_management
     }
 
     def run(self):
@@ -210,7 +218,13 @@ class DataController:
         self.database.default_table_name = dataname
 
     def data_save(self, datas):
-        self.database.insert(datas)
+        tournament_query = Query()
+        search_result = self.database.search(tournament_query['Tournament ID'] == datas['Tournament ID'])
+
+        if search_result:
+            self.database.update(datas, tournament_query['Tournament ID'] == datas['Tournament ID'])
+        else:
+            self.database.insert(datas)
 
 # VVVVVVVVVVVV Tentative de sauvegarde du fichier
 
@@ -219,8 +233,8 @@ class DataController:
         for tournament in self.database:
             if tournament['Current Round'] < tournament['Total Round(s)']:
                 unfinished_tournaments.append(tournament.doc_id)
-                # print(f"{tournament.doc_id}, {tournament['Tournament name']} : Round {tournament['Current Round']} / "
-                #       f"{tournament['Total Round(s)']}")
+                print(f"{tournament.doc_id}, {tournament['Tournament name']} : Round {tournament['Current Round']} / "
+                      f"{tournament['Total Round(s)']}")
         return unfinished_tournaments
 
     def choose_unfinished_tournament(self):
@@ -257,10 +271,20 @@ class DataController:
                                              description=tournament_data['Tournament description'],
                                              round_number=tournament_data['Total Round(s)'])
                 resumed_tournament.current_round = tournament_data['Current Round']
-                resumed_tournament.list_participants = [Player(**player_data) for player_data in tournament_data['Contenders list']]
-                resumed_tournament.current_round = [Round(**round_data) for round_data in tournament_data['Round list']]
-                resumed_tournament.round_list = tournament_data['Round list']
-                resumed_tournament.match_list = [Match(**match_data) for match_data in tournament_data['Match List']]
+                resumed_tournament.list_participants = [Player(**player_data)
+                                                        for player_data in tournament_data['Contenders list']]
+
+                round_list = []
+                for round_data in tournament_data['Round list']:
+                    round_obj = Round(round_data['Tour n°'], round_data['Start Date'],
+                                      round_data['End Date'], round_data['Match List'])
+                    match_list = []
+                    for match_entry in round_data['Match List']:
+                        match = Match(player_1=match_entry['player_1'], score_1=match_entry['score_1'],
+                                      player_2=match_entry['player_2'], score_2=match_entry['score_2'])
+                        match_list.append(match)
+                    round_obj.match_list = match_list
+                    round_list.append(round_obj)
+                resumed_tournament.round_list = round_list
 
                 return resumed_tournament
-

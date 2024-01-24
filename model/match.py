@@ -35,15 +35,23 @@ class Match:
     def __repr__(self):
         return f"\n{self.player_1} {self.score_1} VS {self.score_2} {self.player_2}\n"
 
-    def to_dict(self):
-        return {
-            "Match": f"{self.player_1} {self.score_1} VS {self.score_2} {self.player_2}"
-        }
-
     # def to_dict(self):
     #     return {
-    #         "Player1": self.player_1,
-    #         "Player2": self.player_2,
-    #         "Score1": self.score_1,
-    #         "Score2": self.score_2
+    #         "Match": f"{self.player_1} {self.score_1} VS {self.score_2} {self.player_2}"
     #     }
+
+    def to_dict(self):
+        return {
+            "player_1": self.player_1.to_dict(),
+            "score_1": self.score_1,
+            "player_2": self.player_2.to_dict(),
+            "score_2": self.score_2
+        }
+
+    def __json__(self):
+        return {
+            "player_1": self.player_1.to_dict(),
+            "score_1": self.score_1,
+            "player_2": self.player_2.to_dict(),
+            "score_2": self.score_2
+        }

@@ -18,3 +18,11 @@ class Round:
             'End Date': self.end_date,
             'Match List': [match.to_dict() for match in self.match_list]
         }
+
+    def __json__(self):
+        return {
+            'Tour n°': self.name,
+            'Start Date': self.start_date,
+            'End Date': self.end_date,
+            'Match List': [match.__json__() for match in self.match_list]
+        }
