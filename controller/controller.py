@@ -9,6 +9,7 @@ import random
 from view.view import TournamentView, ConsoleView
 from datetime import datetime
 from tinydb import TinyDB, Query
+import json
 
 
 class MainController:
@@ -23,7 +24,8 @@ class MainController:
         console_view = ConsoleView("Informations")
         tournament_inputs = tournament_view.create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
-        _, _, created_tournament.list_participants = self.tournament_controller.players_registration()
+        left_opponents_by_player, _, created_tournament.list_participants = self.tournament_controller.players_registration()  # TODO : Pourquoi les deux vides ?
+        created_tournament.left_opponents_by_player = left_opponents_by_player
         view.TournamentView.print_created_tournament(created_tournament)
 
         for i in range(1, int(created_tournament.round_number) + 1):
@@ -123,6 +125,8 @@ class TournamentController:
             list_participants_copy = self.list_participants.copy()
             list_participants_copy.pop(index)
             self.left_opponents_by_player[element] = list_participants_copy
+        for player, left_opponents_by_player in self.left_opponents_by_player.items():
+            print(f"{player}, whose chess_id={player.chess_id} has to play with {left_opponents_by_player}")
         return self.left_opponents_by_player, self.list_participants, self.initial_list
 
     def generate_first_pairs(self):
@@ -142,6 +146,7 @@ class TournamentController:
         return generated_pairs
 
     def generate_pairs(self, round_obj):
+        self.left_opponents_by_player = round_obj.left_opponents_by_player
         current_ranking = self.get_ranking(round_obj.match_list)
         ranked_players = [player for player, _ in current_ranking]
         next_pairs = []
@@ -150,6 +155,7 @@ class TournamentController:
             while True:
                 index = 0
                 player_1 = ranked_players.pop(index)
+                keys = list(self.left_opponents_by_player.keys())
                 try:
                     if ranked_players[index] in self.left_opponents_by_player[player_1]:
                         player_2 = ranked_players.pop(index)
@@ -196,17 +202,32 @@ class TournamentController:
 
     @staticmethod
     def get_ranking(match_list):
-        previous_matches = match_list
         scores_list_dict = {}
-        for num, outcome in enumerate(previous_matches):
-            player_1 = outcome.player_1
+        players_dict = {}
+
+        for outcome in match_list:
+            player_1_id = outcome.player_1['chess_id'] if not isinstance(outcome.player_1,
+                                                                         Player) else outcome.player_1.chess_id
+            if player_1_id not in players_dict:
+                players_dict[player_1_id] = Player(**outcome.player_1) if not isinstance(outcome.player_1,
+                                                                                         Player) else outcome.player_1
+            player_1 = players_dict[player_1_id]
+
+            player_2_id = outcome.player_2['chess_id'] if not isinstance(outcome.player_2,
+                                                                         Player) else outcome.player_2.chess_id
+            if player_2_id not in players_dict:
+                players_dict[player_2_id] = Player(**outcome.player_2) if not isinstance(outcome.player_2,
+                                                                                         Player) else outcome.player_2
+            player_2 = players_dict[player_2_id]
+
             score_player_1 = float(outcome.score_1)
-            player_2 = outcome.player_2
             score_player_2 = float(outcome.score_2)
+
             scores_list_dict.setdefault(player_1, 0)
             scores_list_dict[player_1] += score_player_1
             scores_list_dict.setdefault(player_2, 0)
             scores_list_dict[player_2] += score_player_2
+
         ranking = sorted(scores_list_dict.items(), key=lambda item: item[1], reverse=True)
         return ranking
 
@@ -271,20 +292,74 @@ class DataController:
                                              description=tournament_data['Tournament description'],
                                              round_number=tournament_data['Total Round(s)'])
                 resumed_tournament.current_round = tournament_data['Current Round']
-                resumed_tournament.list_participants = [Player(**player_data)
-                                                        for player_data in tournament_data['Contenders list']]
+                resumed_tournament.list_participants = self.deserialize_contenders_list(tournament_data['Contenders list'])
 
                 round_list = []
+                complete_match_list = []
                 for round_data in tournament_data['Round list']:
                     round_obj = Round(round_data['Tour n°'], round_data['Start Date'],
                                       round_data['End Date'], round_data['Match List'])
                     match_list = []
                     for match_entry in round_data['Match List']:
-                        match = Match(player_1=match_entry['player_1'], score_1=match_entry['score_1'],
-                                      player_2=match_entry['player_2'], score_2=match_entry['score_2'])
+                        match = Match(player_1=Player(**match_entry['player_1']), score_1=match_entry['score_1'],
+                                      player_2=Player(**match_entry['player_2']), score_2=match_entry['score_2'])
                         match_list.append(match)
+                        complete_match_list.append(match)
                     round_obj.match_list = match_list
                     round_list.append(round_obj)
+                    resumed_tournament.match_list = complete_match_list
                 resumed_tournament.round_list = round_list
+                resumed_tournament.left_opponents_by_player = self.deserialize_left_opponents_by_player(tournament_data['left_opponents_by_player'])
 
                 return resumed_tournament
+
+    def unpack_left_opponents_by_player(self, tournament_data):
+        database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'players_database.json')
+        with open(database_path, "r", encoding="utf-8") as file:
+            player_database = json.load(file)
+
+        left_opponents_by_player = {}
+        left_opponents_by_player_dict = tournament_data['left_opponents_by_player']
+        for pid, opponents_data in left_opponents_by_player_dict.items():
+            player_info = self.find_player_by_id(player_database, pid)
+            main_player = Player(**player_info)
+            opponents = [Player(**self.find_player_by_id(player_database, opponent['pid']))
+                         for opponent in opponents_data]
+            left_opponents_by_player[main_player] = opponents
+        return left_opponents_by_player
+
+    def find_player_by_id(self, player_database, chess_id):
+        for player in player_database:
+            if player['chess_id'] == chess_id:
+                return player
+        return None
+
+    def deserialize_contenders_list(self, contenders_list):
+        deserialized_contenders_list = []
+        list_participants = []
+        for player_json in contenders_list:
+            player_data = json.loads(player_json)
+            deserialized_contenders_list.append(player_data)
+        for player in deserialized_contenders_list:
+            player_instance = Player(**player)
+            list_participants.append(player_instance)
+        return list_participants
+
+    def deserialize_left_opponents_by_player(self, left_opponents_by_player):
+        deserialized_left_opponents_by_player = json.loads(left_opponents_by_player)
+        new_left_opponents_by_player = {}
+        for player, left_opponents in deserialized_left_opponents_by_player.items():
+            deserialized_player = Player(**self.get_player_by_chess_id(player))
+            # player_instance = Player(**self.find_player_by_id(player_database, player.chess_id))
+            opponents_deserialized = [Player(**json.loads(opponent)) for opponent in left_opponents]
+            new_left_opponents_by_player[deserialized_player] = opponents_deserialized
+        return new_left_opponents_by_player
+
+    def get_player_by_chess_id(self, chess_id):
+        database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'players_database.json')
+        with open(database_path, "r", encoding="utf-8") as file:
+            player_database = json.load(file)
+        for player in player_database:
+            if player['chess_id'] == chess_id:
+                search_player_by_id = player
+                return search_player_by_id

@@ -1,72 +1,92 @@
 [
   {
-    "name": "Dubois",
-    "first_name": "Luc",
-    "birth_date": "1988-04-20"
+    "chess_id": "AA00000",
+    "lastname": "Dubois",
+    "firstname": "Luc",
+    "birthdate": "1988-04-20"
   },
   {
-    "name": "Martin",
-    "first_name": "Amandine",
-    "birth_date": "1986-11-15"
+    "chess_id": "AA00001",
+    "lastname": "Martin",
+    "firstname": "Amandine",
+    "birthdate": "1986-11-15"
   },
   {
-    "name": "Lefevre",
-    "first_name": "Pierre",
-    "birth_date": "1984-07-02"
+    "chess_id": "AA00002",
+    "lastname": "Lefevre",
+    "firstname": "Pierre",
+    "birthdate": "1984-07-02"
   },
   {
-    "name": "Dupont",
-    "first_name": "Isabelle",
-    "birth_date": "1980-09-18"
+    "chess_id": "AA00003",
+    "lastname": "Dupont",
+    "firstname": "Isabelle",
+    "birthdate": "1980-09-18"
   },
   {
-    "name": "Moreau",
-    "first_name": "Sophie",
-    "birth_date": "1978-05-25"
+    "chess_id": "AA0004",
+    "lastname": "Moreau",
+    "firstname": "Sophie",
+    "birthdate": "1978-05-25"
   },
   {
-    "name": "Girard",
-    "first_name": "Antoine",
-    "birth_date": "1975-12-30"
+    "chess_id": "AA00005",
+    "lastname": "Girard",
+    "firstname": "Antoine",
+    "birthdate": "1975-12-30"
   },
   {
-    "name": "Fontaine",
-    "first_name": "Marie",
-    "birth_date": "1989-08-12"
+    "chess_id": "AA00006",
+    "lastname": "Fontaine",
+    "firstname": "Marie",
+    "birthdate": "1989-08-12"
   },
   {
-    "name": "Gauthier",
-    "first_name": "Julie",
-    "birth_date": "1979-09-22"
+    "chess_id": "AA00007",
+    "lastname": "Gauthier",
+    "firstname": "Julie",
+    "birthdate": "1979-09-22"
   },
   {
-    "name": "Marchand",
-    "first_name": "François",
-    "birth_date": "1986-11-05"
+    "chess_id": "AA00008",
+    "lastname": "Marchand",
+    "firstname": "François",
+    "birthdate": "1986-11-05"
   },
   {
-    "name": "Morin",
-    "first_name": "Camille",
-    "birth_date": "1984-07-20"
+    "chess_id": "AA00009",
+    "lastname": "Morin",
+    "firstname": "Camille",
+    "birthdate": "1984-07-20"
   },
   {
-    "name": "Guerin",
-    "first_name": "Thomas",
-    "birth_date": "1980-09-03"
+    "chess_id": "AA00010",
+    "lastname": "Guerin",
+    "firstname": "Thomas",
+    "birthdate": "1980-09-03"
   },
   {
-    "name": "Fournier",
-    "first_name": "Caroline",
-    "birth_date": "1982-03-18"
+    "chess_id": "AA00011",
+    "lastname": "Fournier",
+    "firstname": "Caroline",
+    "birthdate": "1982-03-18"
   },
   {
-    "name": "Jonas",
-    "first_name": "Michel",
-    "birth_date": "09/09/1990"
+    "chess_id": "AA00012",
+    "lastname": "Jonas",
+    "firstname": "Michel",
+    "birthdate": "09/09/1990"
   },
   {
-    "name": "Aoki",
-    "first_name": "Steve",
-    "birth_date": "09/09/1990"
+    "chess_id": "AA00013",
+    "lastname": "Aoki",
+    "firstname": "Steve",
+    "birthdate": "09/09/1990"
+  },
+  {
+    "chess_id": "JF12345",
+    "lastname": "Jean",
+    "firstname": "Michel",
+    "birthdate": "2000-12-12"
   }
 ]
