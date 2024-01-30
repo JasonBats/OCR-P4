@@ -3,7 +3,6 @@ from model.tours import Round
 from view import view
 from model.tournoi import Tournoi
 from model.match import Match
-from rich import print
 import os
 import random
 from view.view import TournamentView, ConsoleView
@@ -24,7 +23,8 @@ class MainController:
         console_view = ConsoleView("Informations")
         tournament_inputs = tournament_view.create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
-        left_opponents_by_player, _, created_tournament.list_participants = self.tournament_controller.players_registration()  # TODO : Pourquoi les deux vides ?
+        left_opponents_by_player, _, created_tournament.list_participants = (
+            self.tournament_controller.players_registration())  # TODO : Pourquoi les deux vides ?
         created_tournament.left_opponents_by_player = left_opponents_by_player
         view.TournamentView.print_created_tournament(created_tournament)
 
@@ -39,21 +39,20 @@ class MainController:
         console_view = ConsoleView("Informations")
         unfinished_tournament = self.data_controller.resume_tournament()
 
-        for i in range(unfinished_tournament.current_round, int(unfinished_tournament.round_number) + 1):
+        for i in range(unfinished_tournament.current_round, int(unfinished_tournament.round_number)):
             self.run_round(unfinished_tournament, unfinished_tournament.current_round, console_view)
-        # Je reprendrai plus tard...
 
     def run_round(self, created_tournament, i, console_view):
         self.tournament_controller.soft_shuffle_counter = 0
         start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-        round_obj = Round(i, start_date=start_date, end_date="", match_list=[])
-        view.TournamentView.print_round_number(i)
         created_tournament.current_round += 1
-        if i == 1:
+        view.TournamentView.print_round_number(created_tournament.current_round)
+        round_obj = Round(created_tournament.current_round, start_date=start_date, end_date="", match_list=[])
+        if created_tournament.current_round == 1:
             pairs = self.tournament_controller.generate_first_pairs()
         else:
             pairs = self.tournament_controller.generate_pairs(created_tournament)
-        view.TournamentView.print_current_round_pairs(i, pairs)
+        view.TournamentView.print_current_round_pairs(created_tournament.current_round, pairs)
         for pair in pairs:
             match_obj = Match(*pair)
             match_obj.encounter()
@@ -65,7 +64,7 @@ class MainController:
         os.system('cls')
         view.TournamentView.print_round_list(created_tournament.round_list)
         console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
-        self.data_controller.data_save(created_tournament.to_dict())  # Sauvegarde à la fin du round
+        self.data_controller.data_save(created_tournament.to_dict())
 
     def show_report(self):
         tournament_reports = view.TournamentReports()
@@ -125,8 +124,6 @@ class TournamentController:
             list_participants_copy = self.list_participants.copy()
             list_participants_copy.pop(index)
             self.left_opponents_by_player[element] = list_participants_copy
-        for player, left_opponents_by_player in self.left_opponents_by_player.items():
-            print(f"{player}, whose chess_id={player.chess_id} has to play with {left_opponents_by_player}")
         return self.left_opponents_by_player, self.list_participants, self.initial_list
 
     def generate_first_pairs(self):
@@ -155,7 +152,6 @@ class TournamentController:
             while True:
                 index = 0
                 player_1 = ranked_players.pop(index)
-                keys = list(self.left_opponents_by_player.keys())
                 try:
                     if ranked_players[index] in self.left_opponents_by_player[player_1]:
                         player_2 = ranked_players.pop(index)
@@ -189,15 +185,14 @@ class TournamentController:
             random.shuffle(current_ranking)
             sorted_ranking = sorted(current_ranking, key=lambda x: x[1], reverse=True)
             ranked_players = [player_name for player_name, player_score in sorted_ranking]
-            view.MainView.print_shuffled_players(ranked_players)
+            view.TournamentView.print_shuffled_players(ranked_players)
             self.soft_shuffle_counter += 1
             return ranked_players
         if self.soft_shuffle_counter >= 50:
             current_ranking = self.get_ranking(round_obj)
             random.shuffle(current_ranking)
             ranked_players = [player_name for player_name, player_score in current_ranking]
-        print("Joueurs mélangés sans classement ! Nouvelle liste :", ranked_players)
-        view.MainView.print_shuffled_players(ranked_players)
+            view.TournamentView.shuffled_players_view(ranked_players)
         return ranked_players
 
     @staticmethod
@@ -247,37 +242,35 @@ class DataController:
         else:
             self.database.insert(datas)
 
-# VVVVVVVVVVVV Tentative de sauvegarde du fichier
-
     def get_unfinished_tournaments(self):
         unfinished_tournaments = []
+        unfinished_tournaments_extended = []
         for tournament in self.database:
             if tournament['Current Round'] < tournament['Total Round(s)']:
                 unfinished_tournaments.append(tournament.doc_id)
-                print(f"{tournament.doc_id}, {tournament['Tournament name']} : Round {tournament['Current Round']} / "
-                      f"{tournament['Total Round(s)']}")
-        return unfinished_tournaments
+                unfinished_tournaments_extended.append(tournament)
+        view.TournamentReports.show_unfinished_tournaments_view(unfinished_tournaments_extended)
+        if unfinished_tournaments:
+            return unfinished_tournaments
 
     def choose_unfinished_tournament(self):
         unfinished_tournaments = self.get_unfinished_tournaments()
         if unfinished_tournaments:
-            print("Veuillez choisir un tournoi à reprendre (entrez son ID)")
             choice = int(input())
             if choice in unfinished_tournaments:
                 return choice
             else:
-                print("ID inexistant")
+                view.TournamentReports.unfinished_tournament_wrong_id()
                 return None
         else:
-            print("Aucun tournoi inachevé")
-            return None
+            main_controller = MainController()
+            main_controller.run()
 
     def load_tournament(self, tournament_id):
         tournament_data = self.database.get(doc_id=tournament_id)
         if tournament_data:
             return tournament_data
         else:
-            print("Touirnoi introuvable")
             return None
 
     def resume_tournament(self):
@@ -285,6 +278,7 @@ class DataController:
         if tournament_id:
             tournament_data = self.load_tournament(tournament_id)
             if tournament_data:
+                tournament_id = tournament_data['Tournament ID']
                 resumed_tournament = Tournoi(name=tournament_data['Tournament name'],
                                              location=tournament_data['Place'],
                                              start_date=tournament_data['Start Date'],
@@ -292,7 +286,9 @@ class DataController:
                                              description=tournament_data['Tournament description'],
                                              round_number=tournament_data['Total Round(s)'])
                 resumed_tournament.current_round = tournament_data['Current Round']
-                resumed_tournament.list_participants = self.deserialize_contenders_list(tournament_data['Contenders list'])
+                resumed_tournament.list_participants = (
+                    self.deserialize_contenders_list(tournament_data['Contenders list']))
+                resumed_tournament.tournament_id = tournament_id
 
                 round_list = []
                 complete_match_list = []
@@ -309,7 +305,8 @@ class DataController:
                     round_list.append(round_obj)
                     resumed_tournament.match_list = complete_match_list
                 resumed_tournament.round_list = round_list
-                resumed_tournament.left_opponents_by_player = self.deserialize_left_opponents_by_player(tournament_data['left_opponents_by_player'])
+                resumed_tournament.left_opponents_by_player = (
+                    self.deserialize_left_opponents_by_player(tournament_data['left_opponents_by_player']))
 
                 return resumed_tournament
 
@@ -350,7 +347,6 @@ class DataController:
         new_left_opponents_by_player = {}
         for player, left_opponents in deserialized_left_opponents_by_player.items():
             deserialized_player = Player(**self.get_player_by_chess_id(player))
-            # player_instance = Player(**self.find_player_by_id(player_database, player.chess_id))
             opponents_deserialized = [Player(**json.loads(opponent)) for opponent in left_opponents]
             new_left_opponents_by_player[deserialized_player] = opponents_deserialized
         return new_left_opponents_by_player
