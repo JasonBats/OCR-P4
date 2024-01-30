@@ -3,13 +3,15 @@ import uuid
 
 
 class Tournoi:
-    def __init__(self, name="",
+    def __init__(self,
+                 tournament_id="",
+                 name="",
                  location="",
                  start_date="",
                  end_date="",
                  description="",
                  round_number=4):
-        self.id = str(uuid.uuid4())
+        self.tournament_id = str(uuid.uuid4())
         self.name = name
         self.location = location
         self.start_date = start_date
@@ -24,7 +26,7 @@ class Tournoi:
 
     def to_dict(self):
         return {
-            'Tournament ID': self.id,
+            'Tournament ID': self.tournament_id,
             'Tournament name': self.name,
             'Place': self.location,
             'Tournament description': self.description,
@@ -34,35 +36,18 @@ class Tournoi:
             'Total Round(s)': self.round_number,
             'Round list': [tour.__json__() for tour in self.round_list],
             'Contenders list': [player.to_json() for player in self.list_participants],
-            'left_opponents_by_player': self.serialization_left_opponents_by_player_2(),
+            'left_opponents_by_player': self.serialization_left_opponents_by_player(),
         }
 
     def serialization_left_opponents_by_player(self):
-        # json.dump({"id": "sss"})
-        # return {
-        #     "":
-        # }
-        serialized_data = {}
-        for player, opponents in self.left_opponents_by_player.items():
-            player_dict = player.to_dict()
-            opponents_list = [opponent.to_dict() for opponent in opponents]
-            player_key = player.chess_id
-            serialized_data[player_key] = opponents_list
-        return serialized_data
-
-    def serialization_left_opponents_by_player_2(self):
         left_players_prepare = {}
 
         for key_player, opponents in self.left_opponents_by_player.items():
-            left_players_prepare[key_player.to_json()] = [
+            left_players_prepare[key_player.chess_id] = [
                 opponent.to_json() for opponent in opponents
             ]
 
-        # Then, we jsonify the container dictionary to a string
         left_players_json = json.dumps(left_players_prepare)
-
-        # Data will be stored like this in database
-        print(left_players_json)
         return left_players_json
 
     def __repr__(self):
