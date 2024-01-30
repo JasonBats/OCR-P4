@@ -18,6 +18,9 @@ class MainController:
         self.data_controller = DataController("Tournaments")
 
     def run_tournament(self):
+        """
+        Initiates and runs the tournament
+        """
         os.system('cls')
         tournament_view = TournamentView
         console_view = ConsoleView("Informations")
@@ -36,6 +39,9 @@ class MainController:
         view.TournamentView.print_created_tournament(created_tournament)
 
     def continue_tournament(self):
+        """
+        Continue a previously started and saved tournament
+        """
         console_view = ConsoleView("Informations")
         unfinished_tournament = self.data_controller.resume_tournament()
 
@@ -43,6 +49,12 @@ class MainController:
             self.run_round(unfinished_tournament, unfinished_tournament.current_round, console_view)
 
     def run_round(self, created_tournament, i, console_view):
+        """
+        Executes a round of the tournament.
+        :param created_tournament: Can be loaded from the database or directly a Tournoi instance.
+        :param i: Used for the current round of an instance, not for a loaded tournament.
+        :param console_view: Used to display information.
+        """
         self.tournament_controller.soft_shuffle_counter = 0
         start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
         created_tournament.current_round += 1
@@ -67,6 +79,9 @@ class MainController:
         self.data_controller.data_save(created_tournament.to_dict())
 
     def show_report(self):
+        """
+        Used to show various reports, managed in view.py
+        """
         tournament_reports = view.TournamentReports()
         report_choice = tournament_reports.show_report_view()
         player_reports = view.PlayerReports()
@@ -83,6 +98,9 @@ class MainController:
             tournament_reports.show_tournament_rounds()
 
     def players_management(self):
+        """
+        Opens players database and show options to manage players.
+        """
         player_view = view.PlayerView()
         player_view.manage_players()
 
@@ -94,6 +112,9 @@ class MainController:
     }
 
     def run(self):
+        """
+        Entry point of the main menu.
+        """
         main_view = view.MainView()
         while True:
             try:
@@ -116,6 +137,13 @@ class TournamentController:
         self.left_opponents_by_player = {}
 
     def players_registration(self):
+        """
+        Where a new tournament is initiated.
+        Uses prompts to create a contenders list and attribute them an opponents list.
+        :return: A tuple containing 3 elements :
+            — A dictionary of left opponents to play with for every player.
+            — A list of all participants, assigned to the created tournament.
+        """
         tournament_view = view.TournamentView()
         self.list_participants = tournament_view.register_players()
         self.initial_list = []
@@ -124,12 +152,25 @@ class TournamentController:
             list_participants_copy = self.list_participants.copy()
             list_participants_copy.pop(index)
             self.left_opponents_by_player[element] = list_participants_copy
-        return self.left_opponents_by_player, self.list_participants, self.initial_list
+        return self.left_opponents_by_player, self.list_participants, self.initial_list  # TODO : initial_list utile ?
 
     def generate_first_pairs(self):
+        """
+        Randomly pairs players for first tournament round.
+
+        Selects players from the participants list and forms pairs.
+        Each selected player is removed from his opponent's list of remaining opponents.
+        The process continues until all players are paired.
+        :return: A list of pairs, where each pair is a tuple.
+        """
         generated_pairs = []
 
         def pop_random(liste_participants):
+            """
+            Picks a random player from the participants list.
+            :param liste_participants: List of instances of the Player class.
+            :return: A random player of the Player class.
+            """
             id_random = random.randrange(0, len(liste_participants))
             return liste_participants.pop(id_random)
 
@@ -143,6 +184,12 @@ class TournamentController:
         return generated_pairs
 
     def generate_pairs(self, round_obj):
+        """
+        Generates pairs after the current ranking of the tournament, and the player's opponents lists.
+        If these two conditions can't be satisfied, players order will be shuffled.
+        :param round_obj: To get the left_opponents_by_player dictionaries and the current ranking.
+        :return: A list of pairs, where each pair is a tuple.
+        """
         self.left_opponents_by_player = round_obj.left_opponents_by_player
         current_ranking = self.get_ranking(round_obj.match_list)
         ranked_players = [player for player, _ in current_ranking]
@@ -179,6 +226,12 @@ class TournamentController:
     soft_shuffle_counter = 0
 
     def shuffle_players(self, round_obj):
+        """
+        Shuffle all players and sort them by their score.
+        If shuffled and sorted players keeps creating unmatching pairs, they will be shuffled without sorting.
+        :param round_obj: To get current ranking.
+        :return: ranked_players: A list of Players, sorted by their score or not.
+        """
         ranked_players = []
         while self.soft_shuffle_counter < 50:
             current_ranking = self.get_ranking(round_obj)
@@ -197,6 +250,13 @@ class TournamentController:
 
     @staticmethod
     def get_ranking(match_list):
+        """
+        Uses previous matches to determine the score for each Player.
+        Creates a dictionary with Players chess_id as keys, and increment the score for each Match.
+        Sort each Player by score.
+        :param match_list: To get the previous matches. From the database or from Round instances.
+        :return: ranking: A list of tuples, composed by a Player and his current score.
+        """
         scores_list_dict = {}
         players_dict = {}
 
@@ -234,6 +294,11 @@ class DataController:
         self.database.default_table_name = dataname
 
     def data_save(self, datas):
+        """
+        Opens database, saves tournament's data.
+        :param datas: To check if the tournament already exists by his Tournament ID.
+        :return: None, insert or updates database.json.
+        """
         tournament_query = Query()
         search_result = self.database.search(tournament_query['Tournament ID'] == datas['Tournament ID'])
 
@@ -243,6 +308,11 @@ class DataController:
             self.database.insert(datas)
 
     def get_unfinished_tournaments(self):
+        """
+        Checks if the database contains unfinished tournaments, by comparing
+        every tournament's current_round and total_round.
+        :return: unfinished_tournaments: a list of unfinished tournaments.
+        """
         unfinished_tournaments = []
         unfinished_tournaments_extended = []
         for tournament in self.database:
@@ -254,6 +324,10 @@ class DataController:
             return unfinished_tournaments
 
     def choose_unfinished_tournament(self):
+        """
+        Gets the user to chose among the unfinished tournaments, which one he wants to continue.
+        :return: choice: an integer representing the index of the unfinished tournament.
+        """
         unfinished_tournaments = self.get_unfinished_tournaments()
         if unfinished_tournaments:
             choice = int(input())
@@ -264,9 +338,14 @@ class DataController:
                 return None
         else:
             main_controller = MainController()
-            main_controller.run()
+            main_controller.run()  # TODO : Trouver une autre manière de revenir au menu principal
 
     def load_tournament(self, tournament_id):
+        """
+        Loads all the datas of a chosen tournament from the database.
+        :param tournament_id: Integer chosen by the user, index of the tournament.
+        :return: tournament_data: the values of the tournament from the database.
+        """
         tournament_data = self.database.get(doc_id=tournament_id)
         if tournament_data:
             return tournament_data
@@ -274,6 +353,10 @@ class DataController:
             return None
 
     def resume_tournament(self):
+        """
+        Recreates an instance of Tournoi from the data obtained from the database.
+        :return: resumed_tournament: an instance of Tournoi usable by the rest of the functions.
+        """
         tournament_id = self.choose_unfinished_tournament()
         if tournament_id:
             tournament_data = self.load_tournament(tournament_id)
@@ -310,28 +393,12 @@ class DataController:
 
                 return resumed_tournament
 
-    def unpack_left_opponents_by_player(self, tournament_data):
-        database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'players_database.json')
-        with open(database_path, "r", encoding="utf-8") as file:
-            player_database = json.load(file)
-
-        left_opponents_by_player = {}
-        left_opponents_by_player_dict = tournament_data['left_opponents_by_player']
-        for pid, opponents_data in left_opponents_by_player_dict.items():
-            player_info = self.find_player_by_id(player_database, pid)
-            main_player = Player(**player_info)
-            opponents = [Player(**self.find_player_by_id(player_database, opponent['pid']))
-                         for opponent in opponents_data]
-            left_opponents_by_player[main_player] = opponents
-        return left_opponents_by_player
-
-    def find_player_by_id(self, player_database, chess_id):
-        for player in player_database:
-            if player['chess_id'] == chess_id:
-                return player
-        return None
-
     def deserialize_contenders_list(self, contenders_list):
+        """
+        Recreates instances of Player objects from the database's contenders_list
+        :param contenders_list: List of dictionaries containing the tournament's contenders and their information.
+        :return: list_participants: A list of Player objects.
+        """
         deserialized_contenders_list = []
         list_participants = []
         for player_json in contenders_list:
@@ -343,6 +410,11 @@ class DataController:
         return list_participants
 
     def deserialize_left_opponents_by_player(self, left_opponents_by_player):
+        """
+        Recreates Player objects from the database's left_opponents_by_player dictionary.
+        :param left_opponents_by_player: All the player's left opponents to play against.
+        :return: new_left_opponents_by_player: A dictionary of Player objects, with a list of opponents as values.
+        """
         deserialized_left_opponents_by_player = json.loads(left_opponents_by_player)
         new_left_opponents_by_player = {}
         for player, left_opponents in deserialized_left_opponents_by_player.items():
@@ -352,6 +424,11 @@ class DataController:
         return new_left_opponents_by_player
 
     def get_player_by_chess_id(self, chess_id):
+        """
+        Find a player in players_database using his chess_id.
+        :param chess_id: Player's unique ID, used as a key.
+        :return: search_player_by_id: The player this chess_id belongs to.
+        """
         database_path = os.path.join(os.path.dirname(__file__), os.pardir, 'model', 'players_database.json')
         with open(database_path, "r", encoding="utf-8") as file:
             player_database = json.load(file)
