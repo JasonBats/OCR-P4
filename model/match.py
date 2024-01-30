@@ -1,4 +1,3 @@
-from rich import print
 import view.view
 
 
@@ -34,11 +33,6 @@ class Match:
 
     def __repr__(self):
         return f"\n{self.player_1} {self.score_1} VS {self.score_2} {self.player_2}\n"
-
-    # def to_dict(self):
-    #     return {
-    #         "Match": f"{self.player_1} {self.score_1} VS {self.score_2} {self.player_2}"
-    #     }
 
     def to_dict(self):
         return {
