@@ -103,6 +103,15 @@ class TournamentView:
     def print_round_list(round_list):
         print(round_list)
 
+    @staticmethod
+    def shuffled_players_view(ranked_players):
+        print("Joueurs mélangés sans classement ! Nouvelle liste :", ranked_players)
+
+    @staticmethod
+    def print_shuffled_players(ranked_players):
+        print("Joueurs mélangés ! Nouvelle liste :", ranked_players)
+
+
 class PlayerView:
     @staticmethod
     def show_all_players():
@@ -165,10 +174,10 @@ class PlayerView:
     @staticmethod
     def build_player():
         new_player = {
-            'pid':input("Quel est son identifiant national d'echecs ?"),
-            'name':input("Quel est le nom du joueur ?\n"),
-            'first_name':input("Quel est son prénom ?\n"),
-            'birth_date':input("Quelle est sa date de naissance ? (AAAA-MM-JJ)\n")
+            'chess_id': input("Quel est son identifiant national d'echecs ?"),
+            'lastname': input("Quel est le nom du joueur ?\n"),
+            'firstname': input("Quel est son prénom ?\n"),
+            'birthdate': input("Quelle est sa date de naissance ? (AAAA-MM-JJ)\n")
         }
         return new_player
 
@@ -250,6 +259,15 @@ class TournamentReports:
             except (KeyError, ValueError, IndexError):
                 print(f"Veuillez saisir un nombre entier entre 1 et {len(database['Tournaments'])}")
 
+    @staticmethod
+    def show_unfinished_tournaments_view(unfinished_tournaments):
+        console_view = ConsoleView("Liste des tournois inachevés")
+        console_view.display_unfinished_tournaments(unfinished_tournaments)
+
+    @staticmethod
+    def unfinished_tournament_wrong_id():
+        print("ID inexistant")
+
 
 class PlayerReports:
     @staticmethod
@@ -306,11 +324,6 @@ class MainView:
     def menu_selection_value_error():
         print("Veuillez saisir un nombre entier")
 
-    @staticmethod
-    def print_shuffled_players(ranked_players):
-        print("Joueurs mélangés ! Nouvelle liste :", ranked_players)
-
-
 
 class ConsoleView:
     def __init__(self, table_title):
@@ -354,3 +367,20 @@ class ConsoleView:
         for player, score in ranking:
             self.table.add_row(str(player), str(score))
         self.console.print(self.table)
+
+    def display_unfinished_tournaments(self, unfinished_tournaments):
+        self.table = Table()
+        self.table.add_column("Index")
+        self.table.add_column("Nom du tournoi")
+        self.table.add_column("Round")
+        for tournament in unfinished_tournaments:
+            self.table.add_row(
+                str(tournament.doc_id),
+                str(tournament['Tournament name']),
+                f"{str(tournament['Current Round'])}/"
+                f"{str(tournament['Total Round(s)'])}")
+        self.console.print(self.table)
+        if not unfinished_tournaments:
+            print("Aucun tournoi inachevé")
+        else:
+            print("Veuillez choisir un tournoi à reprendre (entrez son ID)")
