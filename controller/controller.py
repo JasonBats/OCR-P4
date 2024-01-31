@@ -29,6 +29,7 @@ class MainController:
         left_opponents_by_player, _, created_tournament.list_participants = (
             self.tournament_controller.players_registration())  # TODO : Pourquoi les deux vides ?
         created_tournament.left_opponents_by_player = left_opponents_by_player
+        self.data_controller.data_save(created_tournament.to_dict())
         view.TournamentView.print_created_tournament(created_tournament)
 
         for i in range(1, int(created_tournament.round_number) + 1):
@@ -57,6 +58,8 @@ class MainController:
         """
         self.tournament_controller.soft_shuffle_counter = 0
         start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+        self.tournament_controller.list_participants = created_tournament.list_participants
+        self.tournament_controller.left_opponents_by_player = created_tournament.left_opponents_by_player
         created_tournament.current_round += 1
         view.TournamentView.print_round_number(created_tournament.current_round)
         round_obj = Round(created_tournament.current_round, start_date=start_date, end_date="", match_list=[])
@@ -304,8 +307,10 @@ class DataController:
 
         if search_result:
             self.database.update(datas, tournament_query['Tournament ID'] == datas['Tournament ID'])
+            view.Functional.saved_tournament_message("update")
         else:
             self.database.insert(datas)
+            view.Functional.saved_tournament_message("first save")
 
     def get_unfinished_tournaments(self):
         """
@@ -358,6 +363,7 @@ class DataController:
         :return: resumed_tournament: an instance of Tournoi usable by the rest of the functions.
         """
         tournament_id = self.choose_unfinished_tournament()
+        tournament_controller = TournamentController()
         if tournament_id:
             tournament_data = self.load_tournament(tournament_id)
             if tournament_data:
@@ -371,25 +377,25 @@ class DataController:
                 resumed_tournament.current_round = tournament_data['Current Round']
                 resumed_tournament.list_participants = (
                     self.deserialize_contenders_list(tournament_data['Contenders list']))
-                resumed_tournament.tournament_id = tournament_id
-
-                round_list = []
-                complete_match_list = []
-                for round_data in tournament_data['Round list']:
-                    round_obj = Round(round_data['Tour n°'], round_data['Start Date'],
-                                      round_data['End Date'], round_data['Match List'])
-                    match_list = []
-                    for match_entry in round_data['Match List']:
-                        match = Match(player_1=Player(**match_entry['player_1']), score_1=match_entry['score_1'],
-                                      player_2=Player(**match_entry['player_2']), score_2=match_entry['score_2'])
-                        match_list.append(match)
-                        complete_match_list.append(match)
-                    round_obj.match_list = match_list
-                    round_list.append(round_obj)
-                    resumed_tournament.match_list = complete_match_list
-                resumed_tournament.round_list = round_list
                 resumed_tournament.left_opponents_by_player = (
                     self.deserialize_left_opponents_by_player(tournament_data['left_opponents_by_player']))
+                resumed_tournament.tournament_id = tournament_id
+                round_list = []
+                complete_match_list = []
+                if tournament_data['Round list']:
+                    for round_data in tournament_data['Round list']:
+                        round_obj = Round(round_data['Tour n°'], round_data['Start Date'],
+                                          round_data['End Date'], round_data['Match List'])
+                        match_list = []
+                        for match_entry in round_data['Match List']:
+                            match = Match(player_1=Player(**match_entry['player_1']), score_1=match_entry['score_1'],
+                                          player_2=Player(**match_entry['player_2']), score_2=match_entry['score_2'])
+                            match_list.append(match)
+                            complete_match_list.append(match)
+                        round_obj.match_list = match_list
+                        round_list.append(round_obj)
+                        resumed_tournament.match_list = complete_match_list
+                    resumed_tournament.round_list = round_list
 
                 return resumed_tournament
 
