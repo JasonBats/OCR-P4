@@ -35,3 +35,8 @@ class Player:
 
     def __hash__(self):
         return hash((self.chess_id, self.firstname, self.lastname, self.birthdate))
+
+    @staticmethod
+    def build_player(player_data):
+        player = Player(**player_data)
+        return player
