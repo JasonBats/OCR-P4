@@ -27,7 +27,7 @@ class MainController:
         tournament_inputs = tournament_view.create_tournament_view()
         created_tournament = Tournoi(**tournament_inputs)
         left_opponents_by_player, _, created_tournament.list_participants = (
-            self.tournament_controller.players_registration())  # TODO : Pourquoi les deux vides ?
+            self.tournament_controller.players_registration())  # TODO : Pourquoi les deux vides ? > Parce qu'une des deux est pop()
         created_tournament.left_opponents_by_player = left_opponents_by_player
         self.data_controller.data_save(created_tournament.to_dict())
         view.TournamentView.print_created_tournament(created_tournament)
@@ -46,7 +46,7 @@ class MainController:
         console_view = ConsoleView("Informations")
         unfinished_tournament = self.data_controller.resume_tournament()
 
-        for i in range(unfinished_tournament.current_round, int(unfinished_tournament.round_number)):
+        for i in range(unfinished_tournament.current_round, int(unfinished_tournament.round_number) + 1):
             self.run_round(unfinished_tournament, unfinished_tournament.current_round, console_view)
 
     def run_round(self, created_tournament, i, console_view):
@@ -58,28 +58,47 @@ class MainController:
         """
         self.tournament_controller.soft_shuffle_counter = 0
         start_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-        self.tournament_controller.list_participants = created_tournament.list_participants
-        self.tournament_controller.left_opponents_by_player = created_tournament.left_opponents_by_player
-        created_tournament.current_round += 1
-        view.TournamentView.print_round_number(created_tournament.current_round)
-        round_obj = Round(created_tournament.current_round, start_date=start_date, end_date="", match_list=[])
+        # self.tournament_controller.list_participants = created_tournament.list_participants
+        # self.tournament_controller.left_opponents_by_player = created_tournament.left_opponents_by_player
+        if created_tournament.current_round != 0:
+            # Si score_1 n'est pas Null ET score_2 n'est pas null pour chaque match dans dernier_round.match_list
+            if all(match.score_1 is not None and match.score_2 is not None for match in
+                   created_tournament.round_list[-1].match_list):
+                created_tournament.current_round += 1
+                view.TournamentView.print_round_number(created_tournament.current_round)
+                round_obj = Round(created_tournament.current_round, start_date=start_date, end_date="", match_list=[])
+                created_tournament.round_list.append(round_obj)
+            else:
+                round_obj = created_tournament.round_list[-1]
+        else:
+            created_tournament.current_round += 1
+            view.TournamentView.print_round_number(created_tournament.current_round)
+            round_obj = Round(created_tournament.current_round, start_date=start_date, end_date="", match_list=[])
+            created_tournament.round_list.append(round_obj)
         if created_tournament.current_round == 1:
             pairs = self.tournament_controller.generate_first_pairs()
         else:
-            pairs = self.tournament_controller.generate_pairs(created_tournament)
-        view.TournamentView.print_current_round_pairs(created_tournament.current_round, pairs)
-        for pair in pairs:
-            match_obj = Match(*pair)
-            match_obj.encounter()
-            view.TournamentView.print_match_obj(match_obj)
-            round_obj.match_list.append(match_obj)
-            created_tournament.match_list.append(match_obj)
+            pairs = self.tournament_controller.generate_pairs(
+                created_tournament)  # TODO : Vérifier qu'il n'y a pas déjà des matchs dans le round sinon left_opponents_by_player est vide au round 4 donc crash
+        view.TournamentView.print_current_round_pairs(created_tournament.current_round,
+                                                      pairs)  # TODO : Attention, mauvaises paires quand reprise
+        while len(round_obj.match_list) < 3:
+            for pair in pairs:
+                match_obj = Match(*pair, score_1=None, score_2=None)
+                round_obj.match_list.append(match_obj)
+                created_tournament.match_list.append(match_obj)
+        self.data_controller.data_save(created_tournament.to_dict())
+        for match in round_obj.match_list:
+            if match.score_1 is None or match.score_2 is None:
+                match.encounter()
+                view.TournamentView.print_match_obj(match)
+                self.data_controller.data_save(created_tournament.to_dict())
         round_obj.end_date = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-        created_tournament.round_list.append(round_obj)
+        created_tournament.round_list[-1] = round_obj
+        self.data_controller.data_save(created_tournament.to_dict())
         os.system('cls')
         view.TournamentView.print_round_list(created_tournament.round_list)
         console_view.display_ranking(TournamentController.get_ranking(created_tournament.match_list))
-        self.data_controller.data_save(created_tournament.to_dict())
 
     def show_report(self):
         """
@@ -155,7 +174,7 @@ class TournamentController:
             list_participants_copy = self.list_participants.copy()
             list_participants_copy.pop(index)
             self.left_opponents_by_player[element] = list_participants_copy
-        return self.left_opponents_by_player, self.list_participants, self.initial_list  # TODO : initial_list utile ?
+        return self.left_opponents_by_player, self.list_participants, self.initial_list  # TODO : initial_list utile ? OUI car list_participants est pop()
 
     def generate_first_pairs(self):
         """
@@ -197,6 +216,7 @@ class TournamentController:
         current_ranking = self.get_ranking(round_obj.match_list)
         ranked_players = [player for player, _ in current_ranking]
         next_pairs = []
+        print(self.left_opponents_by_player)
 
         while ranked_players:
             while True:
@@ -278,13 +298,15 @@ class TournamentController:
                                                                                          Player) else outcome.player_2
             player_2 = players_dict[player_2_id]
 
-            score_player_1 = float(outcome.score_1)
-            score_player_2 = float(outcome.score_2)
+            score_player_1 = float(outcome.score_1) if outcome.score_1 is not None else None
+            score_player_2 = float(outcome.score_2) if outcome.score_2 is not None else None
 
             scores_list_dict.setdefault(player_1, 0)
-            scores_list_dict[player_1] += score_player_1
+            if score_player_1 is not None:
+                scores_list_dict[player_1] += score_player_1
             scores_list_dict.setdefault(player_2, 0)
-            scores_list_dict[player_2] += score_player_2
+            if score_player_2 is not None:
+                scores_list_dict[player_2] += score_player_2
 
         ranking = sorted(scores_list_dict.items(), key=lambda item: item[1], reverse=True)
         return ranking
@@ -315,13 +337,14 @@ class DataController:
     def get_unfinished_tournaments(self):
         """
         Checks if the database contains unfinished tournaments, by comparing
-        every tournament's current_round and total_round.
+        every tournament's current_round and total_round.  # TODO : Docstring périmée
         :return: unfinished_tournaments: a list of unfinished tournaments.
         """
         unfinished_tournaments = []
         unfinished_tournaments_extended = []
         for tournament in self.database:
-            if tournament['Current Round'] < tournament['Total Round(s)']:
+            if tournament['Round list'][-1]['Match List'][-1]['score_1'] is None or \
+                    tournament['Round list'][-1]['Match List'][-1]['score_2'] is None:
                 unfinished_tournaments.append(tournament.doc_id)
                 unfinished_tournaments_extended.append(tournament)
         view.TournamentReports.show_unfinished_tournaments_view(unfinished_tournaments_extended)
