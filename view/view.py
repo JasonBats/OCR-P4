@@ -386,7 +386,9 @@ class ConsoleView:
             round_number = database['Tournaments'][chosen_tournament]['Round list'][index]['Tour n°']
             round_match_list = database['Tournaments'][chosen_tournament]['Round list'][index]['Match List']
             for match in round_match_list:
-                self.table.add_row(str(round_number), str(match))
+                player_1 = Player.build_player(match['player_1'])
+                player_2 = Player.build_player(match['player_2'])
+                self.table.add_row(str(round_number), f"{player_1} {match['score_1']} VS {match['score_2']} {player_2}")
         self.console.print(self.table)
 
     def display_ranking(self, ranking):
