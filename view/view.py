@@ -34,9 +34,9 @@ class TournamentView:
                 print("Merci de saisir un nombre entier.")
 
     @staticmethod
-    def write_score(player):
+    def write_score(player_1, player_2):
         try:
-            score = input(f"Quel score pour {player} ?\n(1 = Victoire / 0.5 = Nul / 0 = Défaite)\n")
+            score = input(f"Quel score pour {player_1} VS {player_2}?\n(1 = Victoire / 0.5 = Nul / 0 = Défaite)\n")
             return score
         except ValueError:
             print("Merci de saisir un nombre")
