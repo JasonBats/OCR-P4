@@ -78,10 +78,11 @@ class MainController:
         if created_tournament.current_round == 1:
             pairs = self.tournament_controller.generate_first_pairs()
         else:
-            pairs = self.tournament_controller.generate_pairs(
-                created_tournament)  # TODO : Vérifier qu'il n'y a pas déjà des matchs dans le round sinon left_opponents_by_player est vide au round 4 donc crash
-        view.TournamentView.print_current_round_pairs(created_tournament.current_round,
-                                                      pairs)  # TODO : Attention, mauvaises paires quand reprise
+            if len(created_tournament.round_list[-1].match_list) == 0:
+                pairs = self.tournament_controller.generate_pairs(
+                    created_tournament)  # TODO : Vérifier qu'il n'y a pas déjà des matchs dans le round sinon left_opponents_by_player est vide au round 4 donc crash
+                view.TournamentView.print_current_round_pairs(created_tournament.current_round,
+                                                              pairs)  # TODO : Attention, mauvaises paires quand reprise
         while len(round_obj.match_list) < 3:
             for pair in pairs:
                 match_obj = Match(*pair, score_1=None, score_2=None)
@@ -216,7 +217,6 @@ class TournamentController:
         current_ranking = self.get_ranking(round_obj.match_list)
         ranked_players = [player for player, _ in current_ranking]
         next_pairs = []
-        print(self.left_opponents_by_player)
 
         while ranked_players:
             while True:
@@ -343,8 +343,8 @@ class DataController:
         unfinished_tournaments = []
         unfinished_tournaments_extended = []
         for tournament in self.database:
-            if tournament['Round list'][-1]['Match List'][-1]['score_1'] is None or \
-                    tournament['Round list'][-1]['Match List'][-1]['score_2'] is None:
+            if (tournament['Current Round'] < tournament['Total Round(s)'] or
+                    tournament['Round list'][-1]['Match List'][-1]['score_1'] is None):
                 unfinished_tournaments.append(tournament.doc_id)
                 unfinished_tournaments_extended.append(tournament)
         view.TournamentReports.show_unfinished_tournaments_view(unfinished_tournaments_extended)
