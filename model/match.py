@@ -19,7 +19,7 @@ class Match:
         """
         tournament_view = view.view.TournamentView()
         while True:
-            self.score_1 = tournament_view.write_score(self.player_1)
+            self.score_1 = tournament_view.write_score(self.player_1, self.player_2)
             if self.score_1 in ["1", "0.5", "0"]:
                 self.score_2 = "0" if self.score_1 == "1" else "1" if self.score_1 == "0" else "0.5"
 
