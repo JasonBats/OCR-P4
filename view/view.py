@@ -388,7 +388,8 @@ class ConsoleView:
             for match in round_match_list:
                 player_1 = Player.build_player(match['player_1'])
                 player_2 = Player.build_player(match['player_2'])
-                self.table.add_row(str(round_number), f"{player_1} {match['score_1']} VS {match['score_2']} {player_2}")
+                self.table.add_row(str(round_number),
+                                   f"{player_1} {match['score_1']} VS {match['score_2']} {player_2}")
         self.console.print(self.table)
 
     def display_ranking(self, ranking):
